@@ -40,7 +40,10 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
       synchronize: process.env.NODE_ENV !== 'production', // Solo en desarrollo
       migrations: [__dirname + '/../migrations/*.ts'],
       migrationsRun: process.env.NODE_ENV === 'production', // Solo en producción
-      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      ssl:
+        process.env.NODE_ENV === 'production'
+          ? { rejectUnauthorized: false }
+          : false,
       logging: process.env.NODE_ENV === 'development',
     }),
     UsersModule,
