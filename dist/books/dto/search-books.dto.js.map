@@ -1,0 +1,1 @@
+{"version":3,"file":"search-books.dto.js","sourceRoot":"","sources":["../../../src/books/dto/search-books.dto.ts"],"names":[],"mappings":";;;;;;;;;;;;AAAA,6CAA8C;AAC9C,qDAAuD;AACvD,qDAAgD;AAEhD,MAAa,cAAc;CAO1B;AANC;IAAC,IAAA,qBAAW,EAAC;QACX,WAAW,EAAE,wDAAwD;QACrE,IAAI,EAAE,6BAAY;KACnB,CAAC;IACD,IAAA,0BAAQ,GAAE;8BACJ,6BAAY;6CAAC;AANtB,wCAOC"}
