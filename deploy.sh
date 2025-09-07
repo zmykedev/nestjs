@@ -54,6 +54,10 @@ gcloud services enable cloudbuild.googleapis.com
 gcloud services enable run.googleapis.com
 gcloud services enable containerregistry.googleapis.com
 
+# Clean dist directory to avoid TypeScript errors
+echo -e "${YELLOW}🧹 Cleaning build directory...${NC}"
+rm -rf dist/
+
 # Build and push using Cloud Build
 echo -e "${YELLOW}🏗️  Building and pushing image using Cloud Build...${NC}"
 gcloud builds submit --config cloudbuild.yaml .
