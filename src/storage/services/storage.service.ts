@@ -26,7 +26,10 @@ export class StorageService {
       console.log('Project ID:', projectId);
       console.log('Bucket Name:', bucketName);
       console.log('Key File:', keyFile);
-      console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+      console.log(
+        'GOOGLE_APPLICATION_CREDENTIALS:',
+        process.env.GOOGLE_APPLICATION_CREDENTIALS,
+      );
       console.log('===================================');
 
       if (!projectId || !bucketName) {

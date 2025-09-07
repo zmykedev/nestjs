@@ -664,7 +664,8 @@ export class AuditLogController {
   @Get('inventory/filter-options')
   @ApiOperation({
     summary: 'Get available filter options for inventory logs',
-    description: 'Retrieve unique genres, publishers, and authors from books table for filter dropdowns',
+    description:
+      'Retrieve unique genres, publishers, and authors from books table for filter dropdowns',
   })
   @ApiResponse({
     status: 200,
@@ -693,7 +694,10 @@ export class AuditLogController {
             },
           },
         },
-        message: { type: 'string', example: 'Filter options retrieved successfully' },
+        message: {
+          type: 'string',
+          example: 'Filter options retrieved successfully',
+        },
       },
     },
   })
@@ -709,11 +713,12 @@ export class AuditLogController {
         message: 'Filter options retrieved successfully',
       };
     } catch (error) {
-      this.logger.error(`Error getting inventory filter options: ${error.message}`);
+      this.logger.error(
+        `Error getting inventory filter options: ${error.message}`,
+      );
       throw error;
     }
   }
-
 
   @Delete('delete-all')
   @ApiOperation({
