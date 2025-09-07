@@ -21,7 +21,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
 
   const port = process.env.PORT || configService.get<number>('PORT') || 3000;
-  
+
   // Console logs para debug en Railway
   console.log('=== RAILWAY DEBUG INFO ===');
   console.log('NODE_ENV:', process.env.NODE_ENV);
@@ -36,7 +36,6 @@ async function bootstrap() {
   console.log('GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
   console.log('GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
   console.log('GCS_KEY_FILE:', process.env.GCS_KEY_FILE);
-
 
   // Reemplaza tu lógica CORS actual con esto:
   const nodeEnv = process.env.NODE_ENV;
@@ -56,7 +55,8 @@ async function bootstrap() {
         'http://localhost:80', // Para Docker local
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
-        'http://127.0.0.1:80', // Para Docker local
+        'http://127.0.0.1:80',
+        'https://cmpc-books.netlify.app',
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
@@ -90,7 +90,7 @@ async function bootstrap() {
       origin: (origin, callback) => {
         // Permitir requests sin origin (mobile apps, postman, etc.)
         if (!origin) return callback(null, true);
-        
+
         // Temporalmente permitir todos los orígenes para desarrollo
         console.log('✅ CORS permitido para origin:', origin);
         return callback(null, true);
@@ -106,7 +106,10 @@ async function bootstrap() {
       ],
       credentials: true,
     });
-    console.log('✅ CORS habilitado para producción con dominios:', allowedOrigins);
+    console.log(
+      '✅ CORS habilitado para producción con dominios:',
+      allowedOrigins,
+    );
   }
 
   app.useGlobalPipes(

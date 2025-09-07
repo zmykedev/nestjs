@@ -153,22 +153,22 @@ export class AuditLogService {
       // Usar metadata cuando no hay entity_id, o JOIN cuando sí hay
       if (author) {
         queryBuilder.andWhere(
-          '(book.author ILIKE :author OR log.metadata->>\'author\' ILIKE :author)',
-          { author: `%${author}%` }
+          "(book.author ILIKE :author OR log.metadata->>'author' ILIKE :author)",
+          { author: `%${author}%` },
         );
       }
 
       if (publisher) {
         queryBuilder.andWhere(
-          '(book.publisher ILIKE :publisher OR log.metadata->>\'publisher\' ILIKE :publisher)',
-          { publisher: `%${publisher}%` }
+          "(book.publisher ILIKE :publisher OR log.metadata->>'publisher' ILIKE :publisher)",
+          { publisher: `%${publisher}%` },
         );
       }
 
       if (genre) {
         queryBuilder.andWhere(
-          '(book.genre ILIKE :genre OR log.metadata->>\'genre\' ILIKE :genre)',
-          { genre: `%${genre}%` }
+          "(book.genre ILIKE :genre OR log.metadata->>'genre' ILIKE :genre)",
+          { genre: `%${genre}%` },
         );
       }
 
@@ -331,16 +331,17 @@ export class AuditLogService {
         .getRawMany();
 
       return {
-        genres: genres.map(item => item.genre).filter(Boolean),
-        publishers: publishers.map(item => item.publisher).filter(Boolean),
-        authors: authors.map(item => item.author).filter(Boolean),
+        genres: genres.map((item) => item.genre).filter(Boolean),
+        publishers: publishers.map((item) => item.publisher).filter(Boolean),
+        authors: authors.map((item) => item.author).filter(Boolean),
       };
     } catch (error) {
-      this.logger.error(`Error getting inventory filter options: ${error.message}`);
+      this.logger.error(
+        `Error getting inventory filter options: ${error.message}`,
+      );
       throw error;
     }
   }
-
 
   async exportInventoryToCSV(queryDto: QueryAuditLogDto): Promise<string> {
     try {
