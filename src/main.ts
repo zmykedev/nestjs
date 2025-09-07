@@ -20,25 +20,12 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const enableCors = configService.get<boolean>('CORS');
-  const port = configService.get<number>('PORT');
-
-  if (enableCors) {
-    // OPCIÓN 1: Wildcard sin credentials (más permisivo)
-    app.enableCors({
-      origin: '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization',
-        'Bearer',
-      ],
-      credentials: false, // DEBE ser false con origin: '*'
-    });
-  }
+  const port = process.env.PORT || configService.get<number>('PORT') || 3000;
+  
+  console.log('Port:', port);
+  console.log('Environment:', process.env.NODE_ENV);
+  console.log('Database Host:', process.env.DATABASE_HOST);
+  console.log('CORS disabled - allowing all origins');
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -50,7 +37,8 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  await app.listen(Number(port));
+  await app.listen(Number(port), '0.0.0.0');
+  console.log(`🚀 Server running on port ${port} in ${process.env.NODE_ENV} mode`);
 }
 
 void bootstrap();

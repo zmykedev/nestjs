@@ -31,15 +31,17 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DATABASE_HOST,
+      host: process.env.DATABASE_HOST || 'localhost',
       port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
-      username: process.env.DATABASE_USER,
-      password: process.env.DATABASE_PASSWORD,
-      database: process.env.DATABASE_NAME,
+      username: process.env.DATABASE_USER || 'postgres',
+      password: process.env.DATABASE_PASSWORD || '',
+      database: process.env.DATABASE_NAME || 'cmpc_db',
       autoLoadEntities: true,
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production', // Solo en desarrollo
       migrations: [__dirname + '/../migrations/*.ts'],
-      migrationsRun: true,
+      migrationsRun: process.env.NODE_ENV === 'production', // Solo en producción
+      ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+      logging: process.env.NODE_ENV === 'development',
     }),
     UsersModule,
     AuthModule,
