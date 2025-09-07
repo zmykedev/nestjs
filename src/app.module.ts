@@ -47,7 +47,6 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
     AuthModule,
     BooksModule,
     AuditLogModule,
-    StorageModule,
   ],
   controllers: [],
   providers: [
