@@ -51,7 +51,9 @@ export class BooksController {
   constructor(
     private readonly booksService: BooksService,
     private readonly storageService: StorageService,
-  ) {}
+  ) {
+    console.log('BooksController constructor - StorageService injected:', !!this.storageService);
+  }
 
   @Get('test')
   @Public()

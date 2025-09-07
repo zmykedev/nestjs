@@ -10,6 +10,7 @@ export class StorageService {
   private isInitialized = false;
 
   constructor(private configService: ConfigService) {
+    console.log('StorageService constructor called - starting initialization');
     this.initializeStorage();
   }
 
@@ -21,10 +22,18 @@ export class StorageService {
       );
       const keyFile = this.configService.get<string>('config.gcs.keyFile');
 
+      console.log('=== GCP STORAGE INITIALIZATION ===');
+      console.log('Project ID:', projectId);
+      console.log('Bucket Name:', bucketName);
+      console.log('Key File:', keyFile);
+      console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+      console.log('===================================');
+
       if (!projectId || !bucketName) {
         this.logger.warn(
           'Google Cloud Storage not configured. File uploads will be disabled.',
         );
+        this.logger.warn('Missing projectId or bucketName');
         return;
       }
 

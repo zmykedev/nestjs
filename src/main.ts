@@ -20,7 +20,7 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const enableCors = configService.get<boolean>('CORS');
+  const enableCors = configService.get<string>('config.cors')
 
   const port = process.env.PORT || configService.get<number>('PORT') || 3000;
   
@@ -35,10 +35,18 @@ async function bootstrap() {
   console.log('DATABASE_NAME:', process.env.DATABASE_NAME);
   console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
   console.log('CORS: ENABLED for Netlify');
+  console.log('=== GCP CONFIGURATION ===');
+  console.log('GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
+  console.log('GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
+  console.log('GCS_KEY_FILE:', process.env.GCS_KEY_FILE);
+  console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+  console.log('GCP Project ID from config:', configService.get<string>('config.gcs.projectId'));
+  console.log('GCP Bucket from config:', configService.get<string>('config.gcs.bucketName'));
+  console.log('GCP Key File from config:', configService.get<string>('config.gcs.keyFile'));
   console.log('========================');
 
   // Habilitar CORS para Netlify
-  if (enableCors) {
+
     // OPCIÓN 1: Wildcard sin credentials (más permisivo)
     app.enableCors({
       origin: '*',
@@ -53,7 +61,7 @@ async function bootstrap() {
       ],
       credentials: false, // DEBE ser false con origin: '*'
     });
-  }
+  
 
   app.useGlobalPipes(
     new ValidationPipe({
