@@ -36,21 +36,15 @@ async function bootstrap() {
   console.log('GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
   console.log('GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
   console.log('GCS_KEY_FILE:', process.env.GCS_KEY_FILE);
-  console.log('GOOGLE_APPLICATION_CREDENTIALS:', process.env.GOOGLE_APPLICATION_CREDENTIALS);
-  console.log('GCP Project ID from config:', configService.get<string>('config.gcs.projectId'));
-  console.log('GCP Bucket from config:', configService.get<string>('config.gcs.bucketName'));
-  console.log('GCP Key File from config:', configService.get<string>('config.gcs.keyFile'));
-  console.log('========================');
+
 
   // Reemplaza tu lógica CORS actual con esto:
-  const enableCors = configService.get<string>('config.cors');
-  const nodeEnv = process.env.NODE_ENV || 'development';
-  const isDev = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv !== 'production';
+  const nodeEnv = process.env.NODE_ENV;
+
+  const isDev = nodeEnv === 'dev' || nodeEnv !== 'production';
 
   // CORS siempre habilitado, pero de manera compliant
-  console.log('🔧 CORS: Configuración CORS-compliant');
   console.log('NODE_ENV:', nodeEnv);
-  console.log('Is Development:', isDev);
 
   if (isDev) {
     // Desarrollo: orígenes específicos con credentials
@@ -59,8 +53,10 @@ async function bootstrap() {
         'http://localhost:3000',
         'http://localhost:3001',
         'http://localhost:5173',
+        'http://localhost:80', // Para Docker local
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
+        'http://127.0.0.1:80', // Para Docker local
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
@@ -75,11 +71,35 @@ async function bootstrap() {
     });
     console.log('✅ CORS habilitado para desarrollo con credentials');
   } else {
-    // Producción: dominio específico con credentials
+    // Producción: configuración flexible para múltiples dominios
+    const allowedOrigins = [
+      'https://cmpc-books.netlify.app',
+      'https://cmpc-frontend.netlify.app', // Si tienes otro dominio
+      'http://localhost:80', // Para testing local
+      'http://localhost:3000', // Para testing local
+    ];
+
+    // Agregar dominio desde variable de entorno si existe
+    if (process.env.FRONTEND_URL) {
+      allowedOrigins.push(process.env.FRONTEND_URL);
+    }
+
     app.enableCors({
-      origin: [
-        'https://cmpc-books.netlify.app/', // CAMBIA por tu dominio real
-      ],
+      origin: (origin, callback) => {
+        // Permitir requests sin origin (mobile apps, postman, etc.)
+        if (!origin) return callback(null, true);
+        
+        // Normalizar origin (remover barra final si existe)
+        const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+        
+        if (allowedOrigins.includes(origin) || allowedOrigins.includes(normalizedOrigin)) {
+          console.log('✅ CORS permitido para origin:', origin);
+          return callback(null, true);
+        }
+        
+        console.log('🚫 CORS bloqueado para origin:', origin);
+        return callback(new Error('Not allowed by CORS'), false);
+      },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Origin',
@@ -91,9 +111,8 @@ async function bootstrap() {
       ],
       credentials: true,
     });
-    console.log('✅ CORS habilitado para producción con credentials');
+    console.log('✅ CORS habilitado para producción con dominios:', allowedOrigins);
   }
-  
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -107,7 +126,7 @@ async function bootstrap() {
 
   await app.listen(Number(port), '0.0.0.0');
   console.log(`🚀 Server is running on port ${port}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
 }
 
 void bootstrap();
