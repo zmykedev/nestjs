@@ -20,8 +20,6 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const enableCors = configService.get<string>('config.cors')
-
   const port = process.env.PORT || configService.get<number>('PORT') || 3000;
   
   // Console logs para debug en Railway
@@ -34,7 +32,6 @@ async function bootstrap() {
   console.log('DATABASE_USER:', process.env.DATABASE_USER);
   console.log('DATABASE_NAME:', process.env.DATABASE_NAME);
   console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-  console.log('CORS: ENABLED for Netlify');
   console.log('=== GCP CONFIGURATION ===');
   console.log('GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
   console.log('GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
@@ -45,11 +42,26 @@ async function bootstrap() {
   console.log('GCP Key File from config:', configService.get<string>('config.gcs.keyFile'));
   console.log('========================');
 
-  // Habilitar CORS para Netlify
+  // Reemplaza tu lógica CORS actual con esto:
+  const enableCors = configService.get<string>('config.cors');
+  const nodeEnv = process.env.NODE_ENV || 'development';
+  const isDev = nodeEnv === 'development' || nodeEnv === 'dev' || nodeEnv !== 'production';
 
-    // OPCIÓN 1: Wildcard sin credentials (más permisivo)
+  // CORS siempre habilitado, pero de manera compliant
+  console.log('🔧 CORS: Configuración CORS-compliant');
+  console.log('NODE_ENV:', nodeEnv);
+  console.log('Is Development:', isDev);
+
+  if (isDev) {
+    // Desarrollo: orígenes específicos con credentials
     app.enableCors({
-      origin: '*',
+      origin: [
+        'http://localhost:3000',
+        'http://localhost:3001',
+        'http://localhost:5173',
+        'http://127.0.0.1:5173',
+        'http://127.0.0.1:3000',
+      ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
         'Origin',
@@ -59,8 +71,28 @@ async function bootstrap() {
         'Authorization',
         'Bearer',
       ],
-      credentials: false, // DEBE ser false con origin: '*'
+      credentials: true,
     });
+    console.log('✅ CORS habilitado para desarrollo con credentials');
+  } else {
+    // Producción: dominio específico con credentials
+    app.enableCors({
+      origin: [
+        'https://cmpc-books.netlify.app/', // CAMBIA por tu dominio real
+      ],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'Bearer',
+      ],
+      credentials: true,
+    });
+    console.log('✅ CORS habilitado para producción con credentials');
+  }
   
 
   app.useGlobalPipes(

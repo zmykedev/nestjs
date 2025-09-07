@@ -1,0 +1,96 @@
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: cmpc-backend
+  annotations:
+    run.googleapis.com/ingress: all
+    run.googleapis.com/execution-environment: gen2
+spec:
+  template:
+    metadata:
+      annotations:
+        # Autoscaling configuration
+        autoscaling.knative.dev/maxScale: "10"
+        autoscaling.knative.dev/minScale: "1"
+        
+        # Resource limits
+        run.googleapis.com/cpu: "1"
+        run.googleapis.com/memory: "1Gi"
+        
+        # Execution environment
+        run.googleapis.com/execution-environment: gen2
+        
+        # VPC connector (if needed)
+        # run.googleapis.com/vpc-access-connector: projects/PROJECT_ID/locations/REGION/connectors/CONNECTOR_NAME
+        
+    spec:
+      containerConcurrency: 100
+      timeoutSeconds: 300
+      containers:
+      - image: gcr.io/PROJECT_ID/cmpc-backend:latest
+        ports:
+        - containerPort: 3000
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "3000"
+        # Database configuration
+        - name: DATABASE_HOST
+          valueFrom:
+            secretKeyRef:
+              name: cmpc-secrets
+              key: database-host
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USER
+          valueFrom:
+            secretKeyRef:
+              name: cmpc-secrets
+              key: database-user
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: cmpc-secrets
+              key: database-password
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: cmpc-secrets
+              key: database-name
+        # JWT configuration
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: cmpc-secrets
+              key: jwt-secret
+        # GCP configuration
+        - name: GCS_PROJECT_ID
+          value: "strategic-arc-471303-m4"
+        - name: GCS_BUCKET_NAME
+          value: "cmpc-book"
+        - name: GCS_KEY_FILE
+          value: "google-strategy-new.json"
+        resources:
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+          requests:
+            cpu: "0.5"
+            memory: "512Mi"
+        livenessProbe:
+          httpGet:
+            path: /api/v1/books/test
+            port: 3000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /api/v1/books/test
+            port: 3000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
