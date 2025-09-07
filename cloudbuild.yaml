@@ -2,6 +2,12 @@
 # This file defines the build pipeline for deploying the NestJS application
 
 steps:
+  # Step 0: Clean build directory
+  - name: 'node:18-alpine'
+    entrypoint: 'sh'
+    args: ['-c', 'rm -rf dist/']
+    dir: 'cmpc-backend'
+
   # Step 1: Install dependencies and run tests
   - name: 'node:18-alpine'
     entrypoint: 'npm'
@@ -22,8 +28,8 @@ steps:
 
   # Step 4: Build the application
   - name: 'node:18-alpine'
-    entrypoint: 'npm'
-    args: ['run', 'build']
+    entrypoint: 'npx'
+    args: ['nest', 'build']
     dir: 'cmpc-backend'
 
   # Step 5: Build Docker image
