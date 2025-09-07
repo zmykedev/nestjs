@@ -32,8 +32,16 @@ async function bootstrap() {
   console.log('DATABASE_USER:', process.env.DATABASE_USER);
   console.log('DATABASE_NAME:', process.env.DATABASE_NAME);
   console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-  console.log('CORS: DISABLED - allowing all origins');
+  console.log('CORS: ENABLED for Netlify');
   console.log('========================');
+
+  // Habilitar CORS para Netlify
+  app.enableCors({
+    origin: ['https://cmpc-books.netlify.app', 'http://localhost:5173'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Bearer'],
+    credentials: true,
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({
