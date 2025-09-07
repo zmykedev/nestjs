@@ -5,17 +5,15 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
 
-# Install pnpm and dependencies
-RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile
+# Install dependencies
+RUN npm ci --only=production
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN pnpm run build
+RUN npm run build
 
 # Production stage
 FROM node:18-alpine AS production
@@ -28,11 +26,9 @@ RUN adduser -S nestjs -u 1001
 
 # Copy package files
 COPY package*.json ./
-COPY pnpm-lock.yaml ./
 
 # Install only production dependencies
-RUN npm install -g pnpm
-RUN pnpm install --frozen-lockfile --prod
+RUN npm ci --only=production && npm cache clean --force
 
 # Copy built application from builder stage
 COPY --from=builder /app/dist ./dist
