@@ -20,6 +20,8 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
+  const enableCors = configService.get<boolean>('CORS');
+
   const port = process.env.PORT || configService.get<number>('PORT') || 3000;
   
   // Console logs para debug en Railway
@@ -36,12 +38,22 @@ async function bootstrap() {
   console.log('========================');
 
   // Habilitar CORS para Netlify
-  app.enableCors({
-    origin: ['https://cmpc-books.netlify.app', 'http://localhost:5173'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Accept', 'Authorization', 'Bearer'],
-    credentials: true,
-  });
+  if (enableCors) {
+    // OPCIÓN 1: Wildcard sin credentials (más permisivo)
+    app.enableCors({
+      origin: '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+      allowedHeaders: [
+        'Origin',
+        'X-Requested-With',
+        'Content-Type',
+        'Accept',
+        'Authorization',
+        'Bearer',
+      ],
+      credentials: false, // DEBE ser false con origin: '*'
+    });
+  }
 
   app.useGlobalPipes(
     new ValidationPipe({
