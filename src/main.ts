@@ -20,38 +20,20 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const enableCors = configService.get<boolean>('CORS');
-  const port = configService.get<number>('PORT');
+  const port = process.env.PORT || configService.get<number>('PORT') || 3000;
   
   // Console logs para debug en Railway
   console.log('=== RAILWAY DEBUG INFO ===');
   console.log('NODE_ENV:', process.env.NODE_ENV);
   console.log('PORT from env:', process.env.PORT);
   console.log('PORT from config:', port);
-  console.log('CORS enabled:', enableCors);
   console.log('DATABASE_HOST:', process.env.DATABASE_HOST);
   console.log('DATABASE_PORT:', process.env.DATABASE_PORT);
   console.log('DATABASE_USER:', process.env.DATABASE_USER);
   console.log('DATABASE_NAME:', process.env.DATABASE_NAME);
   console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
+  console.log('CORS: DISABLED - allowing all origins');
   console.log('========================');
-
-  if (enableCors) {
-    // OPCIÓN 1: Wildcard sin credentials (más permisivo)
-    app.enableCors({
-      origin: '*',
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization',
-        'Bearer',
-      ],
-      credentials: false, // DEBE ser false con origin: '*'
-    });
-  }
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -63,7 +45,7 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  await app.listen(Number(port));
+  await app.listen(Number(port), '0.0.0.0');
   console.log(`🚀 Server is running on port ${port}`);
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 }
