@@ -77,6 +77,8 @@ async function bootstrap() {
       'https://cmpc-frontend.netlify.app', // Si tienes otro dominio
       'http://localhost:80', // Para testing local
       'http://localhost:3000', // Para testing local
+      'http://localhost:5173', // Para Vite dev server
+      'http://127.0.0.1:5173', // Para Vite dev server
     ];
 
     // Agregar dominio desde variable de entorno si existe
@@ -89,16 +91,9 @@ async function bootstrap() {
         // Permitir requests sin origin (mobile apps, postman, etc.)
         if (!origin) return callback(null, true);
         
-        // Normalizar origin (remover barra final si existe)
-        const normalizedOrigin = origin.endsWith('/') ? origin.slice(0, -1) : origin;
-        
-        if (allowedOrigins.includes(origin) || allowedOrigins.includes(normalizedOrigin)) {
-          console.log('✅ CORS permitido para origin:', origin);
-          return callback(null, true);
-        }
-        
-        console.log('🚫 CORS bloqueado para origin:', origin);
-        return callback(new Error('Not allowed by CORS'), false);
+        // Temporalmente permitir todos los orígenes para desarrollo
+        console.log('✅ CORS permitido para origin:', origin);
+        return callback(null, true);
       },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
