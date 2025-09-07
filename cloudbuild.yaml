@@ -1,0 +1,98 @@
+# Google Cloud Build configuration for CMPC Backend
+# This file defines the build pipeline for deploying the NestJS application
+
+steps:
+  # Step 1: Install dependencies and run tests
+  - name: 'node:18-alpine'
+    entrypoint: 'npm'
+    args: ['ci']
+    dir: 'cmpc-backend'
+
+  # Step 2: Run linting
+  - name: 'node:18-alpine'
+    entrypoint: 'npm'
+    args: ['run', 'lint']
+    dir: 'cmpc-backend'
+
+  # Step 3: Run unit tests
+  - name: 'node:18-alpine'
+    entrypoint: 'npm'
+    args: ['run', 'test']
+    dir: 'cmpc-backend'
+
+  # Step 4: Build the application
+  - name: 'node:18-alpine'
+    entrypoint: 'npm'
+    args: ['run', 'build']
+    dir: 'cmpc-backend'
+
+  # Step 5: Build Docker image
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+      'build',
+      '-t', 'gcr.io/$PROJECT_ID/cmpc-backend:$COMMIT_SHA',
+      '-t', 'gcr.io/$PROJECT_ID/cmpc-backend:latest',
+      '-f', 'cmpc-backend/Dockerfile',
+      'cmpc-backend'
+    ]
+
+  # Step 6: Push Docker image to Google Container Registry
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cmpc-backend:$COMMIT_SHA']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/cmpc-backend:latest']
+
+  # Step 7: Deploy to Cloud Run (optional - uncomment if using Cloud Run)
+  # - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  #   entrypoint: 'gcloud'
+  #   args: [
+  #     'run', 'deploy', 'cmpc-backend',
+  #     '--image', 'gcr.io/$PROJECT_ID/cmpc-backend:$COMMIT_SHA',
+  #     '--region', 'us-central1',
+  #     '--platform', 'managed',
+  #     '--allow-unauthenticated',
+  #     '--port', '3000',
+  #     '--memory', '1Gi',
+  #     '--cpu', '1',
+  #     '--max-instances', '10',
+  #     '--set-env-vars', 'NODE_ENV=production'
+  #   ]
+
+  # Step 8: Deploy to Google Kubernetes Engine (optional - uncomment if using GKE)
+  # - name: 'gcr.io/cloud-builders/gke-deploy'
+  #   args:
+  #     - 'run'
+  #     - '--filename=k8s/'
+  #     - '--image=gcr.io/$PROJECT_ID/cmpc-backend:$COMMIT_SHA'
+  #     - '--location=us-central1-a'
+  #     - '--cluster=cmpc-cluster'
+
+# Build configuration
+options:
+  # Use high CPU machine for faster builds
+  machineType: 'E2_HIGHCPU_8'
+  
+  # Build timeout (30 minutes)
+  timeout: '1800s'
+  
+  # Logging configuration
+  logging: CLOUD_LOGGING_ONLY
+
+# Substitution variables
+substitutions:
+  _SERVICE_NAME: 'cmpc-backend'
+  _REGION: 'us-central1'
+  _MEMORY: '1Gi'
+  _CPU: '1'
+  _MAX_INSTANCES: '10'
+
+# Build tags for organization
+tags:
+  - 'cmpc'
+  - 'backend'
+  - 'nestjs'
+  - 'api'
+
+# Build timeout
+timeout: '1800s'
