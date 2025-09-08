@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -19,7 +20,8 @@ import {
   DefaultColumnsResponse,
   UpdateUserDto,
 } from './dto/create.user.dto';
-import { UsersService } from './services/users.service';
+import { UsersService } from './services/users.service.sequelize';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('users') // put the name of the controller in swagger
 @Controller('users')
@@ -67,6 +69,7 @@ export class UsersController {
   })
   @ApiBearerAuth('access-token')
   @Get()
+  @UseGuards(JwtAuthGuard)
   findAll() {
     return this.usersService.findAll();
   }
@@ -93,6 +96,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiBearerAuth('access-token')
   @Get(':id')
+  @UseGuards(JwtAuthGuard)
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(+id);
   }
@@ -122,6 +126,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiBearerAuth('access-token')
   @Patch(':id')
+  @UseGuards(JwtAuthGuard)
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.usersService.update(+id, updateUserDto);
   }
@@ -153,6 +158,7 @@ export class UsersController {
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiBearerAuth('access-token')
   @Delete(':id')
+  @UseGuards(JwtAuthGuard)
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
   }

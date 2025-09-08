@@ -8,7 +8,7 @@ import {
 import { Observable } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Request, Response } from 'express';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../users/models/user.model';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {

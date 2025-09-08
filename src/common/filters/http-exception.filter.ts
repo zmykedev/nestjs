@@ -7,7 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
-import { User } from '../../users/entities/user.entity';
+import { User } from '../../users/models/user.model';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {

@@ -20,7 +20,7 @@ import {
   DefaultColumnsResponse,
   UpdateUserDto,
 } from '../dto/create.user.dto';
-import { UsersService } from '../services/users.service';
+import { UsersService } from '../services/users.service.sequelize';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 
 @ApiTags('users') // put the name of the controller in swagger

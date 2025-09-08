@@ -21,12 +21,12 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import {
   AuditLogService,
   QueryAuditLogDto,
-} from '../services/audit-log.service';
+} from '../services/audit-log.service.sequelize';
 import {
   AuditLogAction,
   AuditLogStatus,
   AuditLogLevel,
-} from '../entities/audit-log.entity';
+} from '../models/audit-log.model';
 
 @ApiTags('audit-logs')
 @Controller('audit-logs')

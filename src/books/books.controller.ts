@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Patch,
+  Put,
   Param,
   Delete,
   UseGuards,
@@ -25,11 +26,11 @@ import { Response } from 'express';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
-import { BooksService } from './books.service';
+import { BooksService } from './services/books.service.sequelize';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
 import { SearchBooksDto } from './dto/search-books.dto';
-import { Book } from './entities/book.entity';
+import { Book } from './models/book.model';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StorageService } from '../storage/services/storage.service';
 
@@ -377,7 +378,7 @@ export class BooksController {
   }
 
   @Patch(':id')
-  @ApiOperation({ summary: 'Update a book' })
+  @ApiOperation({ summary: 'Update a book (partial update)' })
   @ApiResponse({
     status: 200,
     description: 'Book updated successfully',
@@ -391,6 +392,27 @@ export class BooksController {
   })
   @ApiResponse({ status: 404, description: 'Book not found' })
   update(
+    @Param('id') id: string,
+    @Body() updateBookDto: UpdateBookDto,
+  ): Promise<Book> {
+    return this.booksService.update(id, updateBookDto);
+  }
+
+  @Put(':id')
+  @ApiOperation({ summary: 'Update a book (full update)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Book updated successfully',
+    type: Book,
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Insufficient permissions',
+  })
+  @ApiResponse({ status: 404, description: 'Book not found' })
+  updateFull(
     @Param('id') id: string,
     @Body() updateBookDto: UpdateBookDto,
   ): Promise<Book> {

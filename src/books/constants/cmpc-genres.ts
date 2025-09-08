@@ -77,3 +77,6 @@ export const CMPC_SPECIFIC_GENRES = CMPC_GENRE_DESCRIPTIONS.filter(
 export const TRADITIONAL_GENRES = Object.values(Genre).filter(
   (genre) => !CMPC_SPECIFIC_GENRES.includes(genre),
 );
+
+// Export aliases for Sequelize service compatibility
+export { CMPC_SPECIFIC_GENRES as CMPC_GENRES };

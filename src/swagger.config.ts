@@ -17,12 +17,14 @@ Esta API utiliza **JWT (JSON Web Tokens)** para autenticación. Para acceder a e
 1. **Registrarse**: POST /api/v1/auth/register
 2. **Iniciar sesión**: POST /api/v1/auth/login
 3. **Usar el token**: Incluir en el header: Authorization: Bearer <token>
+4. **Renovar token**: GET /api/v1/auth/refresh (con refresh token)
 
 ## 🏗️ Arquitectura
 - **Base URL**: /api/v1
 - **Formato de respuesta**: JSON consistente con estructura { status, data, message }
 - **Soft Delete**: Todas las entidades implementan eliminación lógica para auditoría
 - **Paginación**: Endpoints de listado soportan paginación con page y limit
+- **Filtros avanzados**: Búsqueda por múltiples criterios con ordenamiento
 
 ## 📊 Sistema de Auditoría
 Todos los endpoints están auditados automáticamente, registrando:
@@ -32,25 +34,52 @@ Todos los endpoints están auditados automáticamente, registrando:
 - IP y User-Agent
 - Tiempo de respuesta
 - Estado de la operación
+- Metadatos específicos por entidad
 
 ## 🔒 Roles y Permisos
-- **ADMIN**: Acceso completo al sistema
-- **LIBRARIAN**: Gestión de libros y auditoría
+- **ADMIN**: Acceso completo al sistema, gestión de usuarios y auditoría
+- **LIBRARIAN**: Gestión de libros, exportación y consulta de auditoría
 - **USER**: Consulta de libros y operaciones básicas
 
 ## 🚀 Características Destacadas
 - ✅ **CRUD completo** para todas las entidades
-- ✅ **Búsqueda avanzada** con filtros múltiples
+- ✅ **Búsqueda avanzada** con filtros múltiples y ordenamiento
 - ✅ **Exportación CSV** con filtros personalizables
 - ✅ **Soft Delete** para auditoría completa
 - ✅ **Paginación optimizada** para grandes volúmenes
 - ✅ **Validación robusta** de datos de entrada
 - ✅ **Manejo de errores** centralizado
 - ✅ **Logging automático** de todas las operaciones
+- ✅ **Subida de archivos** con validación de tipos y tamaños
+- ✅ **Estadísticas de auditoría** en tiempo real
+- ✅ **Filtros de inventario** especializados
 
 ## 📖 Ejemplos de Uso
-### Crear un libro
+
+### 1. Autenticación
 \`\`\`bash
+# Registro de usuario
+curl -X POST "http://localhost:3001/api/v1/auth/register" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "usuario@cmpc.com",
+    "password": "password123",
+    "first_name": "Juan",
+    "last_name": "Pérez"
+  }'
+
+# Login
+curl -X POST "http://localhost:3001/api/v1/auth/login" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "email": "usuario@cmpc.com",
+    "password": "password123"
+  }'
+\`\`\`
+
+### 2. Gestión de Libros
+\`\`\`bash
+# Crear un libro
 curl -X POST "http://localhost:3001/api/v1/books" \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -60,12 +89,12 @@ curl -X POST "http://localhost:3001/api/v1/books" \\
     "publisher": "Editorial Planeta",
     "price": 25.99,
     "genre": "Ficción",
-    "availability": true
+    "availability": true,
+    "stock": 15,
+    "description": "Obra maestra de la literatura universal"
   }'
-\`\`\`
 
-### Buscar libros
-\`\`\`bash
+# Búsqueda avanzada
 curl -X POST "http://localhost:3001/api/v1/books/search" \\
   -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
   -H "Content-Type: application/json" \\
@@ -74,20 +103,101 @@ curl -X POST "http://localhost:3001/api/v1/books/search" \\
       "search": "ciencia ficción",
       "genre": "Ficción",
       "availability": true,
+      "minPrice": 10,
+      "maxPrice": 50,
       "page": 1,
-      "limit": 20
+      "limit": 20,
+      "sortBy": "title",
+      "sortOrder": "ASC"
     }
   }'
+
+# Exportar a CSV
+curl -X GET "http://localhost:3001/api/v1/books/export/csv" \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  --output books.csv
+\`\`\`
+
+### 3. Subida de Archivos
+\`\`\`bash
+# Subir imagen de libro
+curl -X POST "http://localhost:3001/api/v1/books/upload-image-only" \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  -F "file=@/path/to/image.jpg"
+\`\`\`
+
+### 4. Auditoría
+\`\`\`bash
+# Obtener logs de auditoría
+curl -X GET "http://localhost:3001/api/v1/audit-logs?page=1&limit=20&action=READ" \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Estadísticas de auditoría
+curl -X GET "http://localhost:3001/api/v1/audit-logs/stats" \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Exportar logs de inventario
+curl -X GET "http://localhost:3001/api/v1/audit-logs/inventory/export" \\
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \\
+  --output inventory-logs.csv
 \`\`\`
 
 ## 📚 Recursos Disponibles
-- **📖 Libros**: Gestión completa del inventario
-- **👥 Usuarios**: Administración de usuarios del sistema
-- **🔐 Autenticación**: Login, registro y gestión de tokens
-- **📊 Auditoría**: Logs detallados de todas las operaciones
+
+### 🔐 Autenticación (/api/v1/auth)
+- **POST /register**: Registro de nuevos usuarios
+- **POST /login**: Inicio de sesión con JWT
+- **GET /logout**: Cerrar sesión
+- **GET /refresh**: Renovar token de acceso
+
+### 📖 Libros (/api/v1/books)
+- **POST /**: Crear nuevo libro
+- **GET /**: Listar todos los libros
+- **POST /search**: Búsqueda avanzada con filtros
+- **GET /:id**: Obtener libro por ID
+- **PATCH /:id**: Actualización parcial
+- **PUT /:id**: Actualización completa
+- **DELETE /:id**: Eliminación lógica
+- **POST /upload-image-only**: Subir imagen de libro
+- **GET /export/csv**: Exportar a CSV
+- **GET /genres**: Obtener géneros disponibles
+- **GET /authors**: Obtener autores disponibles
+- **GET /publishers**: Obtener editoriales disponibles
+
+### 👥 Usuarios (/api/v1/users)
+- **POST /**: Crear nuevo usuario
+- **GET /**: Listar todos los usuarios
+- **GET /:id**: Obtener usuario por ID
+- **PATCH /:id**: Actualizar usuario
+- **DELETE /:id**: Eliminación lógica
+
+### 📊 Auditoría (/api/v1/audit-logs)
+- **GET /**: Listar logs con filtros
+- **GET /stats**: Estadísticas de auditoría
+- **GET /actions**: Acciones disponibles
+- **GET /export**: Exportar logs a CSV
+- **GET /inventory**: Logs específicos de inventario
+- **GET /inventory/export**: Exportar logs de inventario
+- **GET /inventory/filter-options**: Opciones de filtro
+- **DELETE /delete-all**: Eliminar todos los logs
+- **GET /cleanup**: Limpiar logs antiguos
+
+### 💾 Storage (/api/v1/storage)
+- **POST /upload-simple**: Subida simple de archivos
+
+## 🔧 Configuración y Despliegue
+- **Puerto**: 3001 (desarrollo)
+- **Base de datos**: PostgreSQL con Sequelize ORM
+- **Storage**: Google Cloud Storage / ImgBB
+- **Autenticación**: JWT con refresh tokens
+- **Validación**: Class-validator con DTOs
+- **Documentación**: Swagger/OpenAPI 3.0
 
 ## 🆘 Soporte
 Para soporte técnico o reportar problemas, contactar al equipo de desarrollo.
+
+**Versión**: 1.0.0  
+**Última actualización**: ${new Date().toISOString().split('T')[0]}
     `,
     )
     .setVersion('1.0.0')
@@ -121,6 +231,7 @@ Para soporte técnico o reportar problemas, contactar al equipo de desarrollo.
     .addTag('books', '📚 Gestión de Libros')
     .addTag('users', '👥 Gestión de Usuarios')
     .addTag('audit-logs', '📊 Sistema de Auditoría')
+    .addTag('Storage', '💾 Gestión de Archivos')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

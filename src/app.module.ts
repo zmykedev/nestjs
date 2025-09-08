@@ -1,6 +1,6 @@
 import config from './config';
 import { Module } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { SequelizeModule } from '@nestjs/sequelize';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
@@ -29,22 +29,45 @@ import { AuditLogInterceptor } from './common/interceptors/audit-log.interceptor
         http: process.env.NODE_ENV !== 'production',
       }),
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
+    SequelizeModule.forRoot({
+      dialect: 'postgres',
       host: process.env.DATABASE_HOST || 'localhost',
       port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
       username: process.env.DATABASE_USER || 'postgres',
       password: process.env.DATABASE_PASSWORD || '',
       database: process.env.DATABASE_NAME || 'cmpc_db',
-      autoLoadEntities: true,
-      synchronize: process.env.NODE_ENV !== 'production', // Solo en desarrollo
-      migrations: [__dirname + '/../migrations/*.ts'],
-      migrationsRun: process.env.NODE_ENV === 'production', // Solo en producción
-      ssl:
+      autoLoadModels: true,
+      synchronize: false, // Disabled to avoid conflicts with existing TypeORM schema
+
+      // Pool de conexiones optimizado para Sequelize
+      pool: {
+        max: 20,
+        min: 5,
+        acquire: 30000,
+        idle: 10000,
+      },
+
+      // Configuración de modelos
+      define: {
+        timestamps: true,
+        paranoid: true, // Soft delete automático
+        underscored: false, // camelCase
+        freezeTableName: true, // No pluralizar
+      },
+
+      // SSL para producción
+      dialectOptions:
         process.env.NODE_ENV === 'production'
-          ? { rejectUnauthorized: false }
-          : false,
-      logging: process.env.NODE_ENV === 'development',
+          ? {
+              ssl: {
+                require: true,
+                rejectUnauthorized: false,
+              },
+            }
+          : {},
+
+      // Logging
+      logging: process.env.NODE_ENV === 'development' ? console.log : false,
     }),
     UsersModule,
     AuthModule,

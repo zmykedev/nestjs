@@ -77,3 +77,6 @@ export const CMPC_SPECIFIC_AUTHORS = CMPC_AUTHOR_DESCRIPTIONS.filter(
 export const TRADITIONAL_AUTHORS = Object.values(Author).filter(
   (author) => !CMPC_SPECIFIC_AUTHORS.includes(author),
 );
+
+// Export aliases for Sequelize service compatibility
+export { CMPC_SPECIFIC_AUTHORS as CMPC_AUTHORS };

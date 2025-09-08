@@ -4,7 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Request } from 'express';
 import { Strategy } from 'passport-local';
 import config from '../../config';
-import { UsersService } from '../../users/services/users.service';
+import { UsersService } from '../../users/services/users.service.sequelize';
 import { PayloadToken } from '../models/token.model';
 
 @Injectable()
