@@ -23,10 +23,8 @@ export default registerAs('config', () => {
       refreshTokenExpiration: process.env.REFRESH_TOKEN_EXPIRATION ?? '7d',
       accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION ?? '1h',
     },
-    gcs: {
-      projectId: process.env.GCS_PROJECT_ID || 'strategic-arc-471303-m4',
-      bucketName: process.env.GCS_BUCKET_NAME || 'new-books',
-      keyFile: process.env.GCS_KEY_FILE, // Keep for fallback in development
+    imgbb: {
+      apiKey: process.env.IMGBB_API_KEY,
     },
   };
 });

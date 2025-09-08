@@ -25,7 +25,7 @@ export class StorageController {
   constructor(private readonly storageService: StorageService) {}
 
   @Post('upload-simple')
-  @ApiOperation({ summary: 'Simple file upload to Google Cloud Storage' })
+  @ApiOperation({ summary: 'Simple file upload to ImgBB' })
   @ApiResponse({
     status: 201,
     description: 'File uploaded successfully',
@@ -36,25 +36,37 @@ export class StorageController {
         data: {
           type: 'object',
           properties: {
-            result: { type: 'object', description: 'Upload result from GCS' },
-            filePath: { type: 'string', example: 'D:\\temp\\nest.jpg' },
+            publicUrl: {
+              type: 'string',
+              example: 'https://i.ibb.co/example/image.jpg',
+            },
+            fileName: { type: 'string', example: 'custom-file-name.jpg' },
+            bucketName: { type: 'string', example: 'imgbb' },
           },
         },
         message: { type: 'string', example: 'File uploaded successfully' },
       },
     },
   })
-  @ApiResponse({ status: 400, description: 'Bad request - Invalid file path' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - Invalid file path or ImgBB not configured',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async uploadFileGcp(@Query('filePath') filePath: string) {
+  async uploadFileSimple(
+    @Query('filePath') filePath: string,
+    @Query('fileName') fileName?: string,
+  ) {
     if (!filePath) {
       throw new BadRequestException('File path is required');
     }
 
-    const result = await this.storageService.uploadFileGcp(filePath);
-    return {
-      result,
+    const customFileName = fileName || `upload-${Date.now()}.jpg`;
+    const result = await this.storageService.uploadFileAndGetPublicUrl(
       filePath,
-    };
+      customFileName,
+    );
+
+    return result;
   }
 }

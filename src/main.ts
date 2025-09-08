@@ -22,8 +22,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || configService.get<number>('PORT') || 3000;
 
-
-
   // Reemplaza tu lógica CORS actual con esto:
   const nodeEnv = process.env.NODE_ENV;
 
