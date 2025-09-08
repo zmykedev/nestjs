@@ -12,7 +12,6 @@ import {
   UseInterceptors,
   UploadedFile,
   BadRequestException,
-  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
@@ -34,15 +33,6 @@ import { Book } from './entities/book.entity';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { StorageService } from '../storage/services/storage.service';
 
-import { Public } from '../auth/decorators/public.decorator';
-
-interface GcsUploadResult {
-  metadata: {
-    mediaLink?: string;
-    selfLink?: string;
-  };
-}
-
 @ApiTags('books')
 @Controller('books')
 @UseGuards(JwtAuthGuard)
@@ -51,23 +41,7 @@ export class BooksController {
   constructor(
     private readonly booksService: BooksService,
     private readonly storageService: StorageService,
-  ) {
-    console.log(
-      'BooksController constructor - StorageService injected:',
-      !!this.storageService,
-    );
-  }
-
-  @Get('test')
-  @Public()
-  @ApiOperation({ summary: 'Test endpoint - no authentication required' })
-  @ApiResponse({ status: 200, description: 'Test successful' })
-  testEndpoint() {
-    return {
-      message: 'Test endpoint working - no auth required',
-      timestamp: new Date().toISOString(),
-    };
-  }
+  ) {}
 
   @Post()
   @ApiOperation({ summary: 'Create a new book' })
@@ -130,7 +104,6 @@ export class BooksController {
   })
   searchBooks(@Body() searchDto: SearchBooksDto) {
     const result = this.booksService.findAll(searchDto.query);
-
     return result;
   }
 
@@ -167,135 +140,24 @@ export class BooksController {
     return this.booksService.findAll({});
   }
 
-  @Get('genres')
-  @ApiOperation({ summary: 'Get all available genres' })
-  @ApiResponse({
-    status: 200,
-    description: 'Genres retrieved successfully',
-    type: [String],
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getGenres(): string[] {
-    return this.booksService.getGenres();
-  }
-
-  @Get('genres/cmpc-specific')
-  @ApiOperation({ summary: 'Get CMPC specific genres' })
-  @ApiResponse({
-    status: 200,
-    description: 'CMPC specific genres retrieved successfully',
-    type: [String],
-  })
-  getCmpcSpecificGenres(): string[] {
-    return this.booksService.getCmpcSpecificGenres();
-  }
-
-  @Get('genres/traditional')
-  @ApiOperation({ summary: 'Get traditional genres' })
-  @ApiResponse({
-    status: 200,
-    description: 'Traditional genres retrieved successfully',
-    type: [String],
-  })
-  getTraditionalGenres(): string[] {
-    return this.booksService.getTraditionalGenres();
-  }
-
-  @Get('genres/descriptions')
-  @ApiOperation({ summary: 'Get genres with descriptions' })
-  @ApiResponse({
-    status: 200,
-    description: 'Genres with descriptions retrieved successfully',
-  })
-  getGenreDescriptions() {
-    return this.booksService.getGenreDescriptions();
-  }
-
-  @Get('authors')
-  @ApiOperation({ summary: 'Get all available authors' })
-  @ApiResponse({
-    status: 200,
-    description: 'Authors retrieved successfully',
-    type: [String],
-  })
-  getAuthors(): string[] {
-    return this.booksService.getAuthors();
-  }
-
-  @Get('authors/cmpc-specific')
-  @ApiOperation({ summary: 'Get CMPC specific authors' })
-  @ApiResponse({
-    status: 200,
-    description: 'CMPC specific authors retrieved successfully',
-    type: [String],
-  })
-  getCmpcSpecificAuthors(): string[] {
-    return this.booksService.getCmpcSpecificAuthors();
-  }
-
-  @Get('authors/traditional')
-  @ApiOperation({ summary: 'Get traditional authors' })
-  @ApiResponse({
-    status: 200,
-    description: 'Traditional authors retrieved successfully',
-    type: [String],
-  })
-  getTraditionalAuthors(): string[] {
-    return this.booksService.getTraditionalAuthors();
-  }
-
-  @Get('authors/descriptions')
-  @ApiOperation({ summary: 'Get authors with descriptions' })
-  @ApiResponse({
-    status: 200,
-    description: 'Authors with descriptions retrieved successfully',
-  })
-  getAuthorDescriptions() {
-    return this.booksService.getAuthorDescriptions();
-  }
-
-  @Get('publishers')
-  @ApiOperation({ summary: 'Get all available publishers' })
-  @ApiResponse({
-    status: 200,
-    description: 'Publishers retrieved successfully',
-    type: [String],
-  })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  getPublishers(): string[] {
-    return this.booksService.getPublishers();
-  }
-
-  @Post('upload-image')
-  @ApiOperation({ summary: 'Upload an image for a book' })
+  @Post('upload-image-only')
+  @ApiOperation({ summary: 'Upload image only and return URL' })
   @ApiConsumes('multipart/form-data')
   @ApiResponse({
     status: 201,
-    description: 'Image uploaded and book updated successfully',
+    description: 'Image uploaded successfully',
     schema: {
       type: 'object',
       properties: {
-        status: { type: 'boolean', example: true },
-        data: {
-          type: 'object',
-          properties: {
-            success: { type: 'boolean', example: true },
-            message: {
-              type: 'string',
-              example: 'Image uploaded and book updated successfully',
-            },
-            originalName: { type: 'string', example: 'book-cover.jpg' },
-            size: { type: 'number', example: 1024000 },
-            mimeType: { type: 'string', example: 'image/jpeg' },
-          },
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Imagen subida exitosamente' },
+        imageUrl: {
+          type: 'string',
+          example: 'https://storage.googleapis.com/bucket/image.jpg',
         },
-        message: { type: 'string', example: 'Registro creado exitosamente' },
-        timestamp: { type: 'string', example: '2024-01-01T00:00:00.000Z' },
-        path: { type: 'string', example: '/api/v1/books/upload-image' },
-        method: { type: 'string', example: 'POST' },
-        statusCode: { type: 'number', example: 201 },
+        originalName: { type: 'string', example: 'image.jpg' },
+        size: { type: 'number', example: 1024000 },
+        mimeType: { type: 'string', example: 'image/jpeg' },
       },
     },
   })
@@ -303,65 +165,76 @@ export class BooksController {
     status: 400,
     description: 'Bad request - Invalid file or file too large',
   })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 404, description: 'Book not found' })
-  @UseInterceptors(FileInterceptor('image'))
-  async uploadBookImage(
-    @UploadedFile() file: Express.Multer.File,
-    @Body('bookId') bookId: string,
-    @Body('id') id: string,
-    @Query('bookId') queryBookId: string,
-  ) {
-    // Try to get bookId from any of the possible sources
-    const finalBookId = bookId || id || queryBookId;
-
+  @UseInterceptors(FileInterceptor('file'))
+  async uploadImageOnly(@UploadedFile() file: Express.Multer.File) {
     if (!file) {
-      throw new BadRequestException('No file provided');
+      throw new BadRequestException('No se proporcionó ningún archivo');
     }
 
-    if (!finalBookId) {
+    // Validar tipo de archivo
+    const allowedMimeTypes = [
+      'image/jpeg',
+      'image/jpg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+    ];
+    if (!allowedMimeTypes.includes(file.mimetype)) {
       throw new BadRequestException(
-        'Book ID is required. Send it as bookId, id in body, or bookId as query parameter',
+        'Tipo de archivo no permitido. Solo se permiten: JPG, PNG, GIF, WebP',
+      );
+    }
+
+    // Validar tamaño (5MB máximo)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      throw new BadRequestException(
+        'El archivo es demasiado grande. Tamaño máximo: 5MB',
       );
     }
 
     const tempDir = os.tmpdir();
-    const tempFilePath = path.join(tempDir, file.originalname);
+    const tempFilePath = path.join(
+      tempDir,
+      `upload-${Date.now()}-${file.originalname}`,
+    );
 
     try {
-      // Write file to temp location
+      // Escribir archivo temporal
       fs.writeFileSync(tempFilePath, file.buffer);
 
-      // Upload to GCS
-      const result = (await this.storageService.uploadFileGcp(
+      // Generate custom file name with timestamp to avoid conflicts
+      const customFileName = `books-${Date.now()}-${file.originalname}`;
+      const uploadResult = await this.storageService.uploadFileAndGetPublicUrl(
         tempFilePath,
-      )) as GcsUploadResult[];
+        customFileName,
+      );
 
-      // Clean up temp file
+      // Limpiar archivo temporal
       fs.unlinkSync(tempFilePath);
 
-      // Extract URL from result
-      const imageUrl: string = result[0].metadata.mediaLink;
-
-      const updatedBook: Book = await this.booksService.update(finalBookId, {
-        imageUrl,
-      });
-
-      const response = {
+      return {
         success: true,
-        message: 'Image uploaded and book updated successfully',
+        message: 'Imagen subida exitosamente',
+        imageUrl: uploadResult.publicUrl,
         originalName: file.originalname,
         size: file.size,
         mimeType: file.mimetype,
+        fileName: uploadResult.fileName,
+        bucketName: uploadResult.bucketName,
       };
-
-      return response;
     } catch (error) {
-      // Clean up temp file if it exists
+      // Limpiar archivo temporal si existe
       if (fs.existsSync(tempFilePath)) {
         fs.unlinkSync(tempFilePath);
       }
-      throw error;
+
+      console.error('Error uploading image:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Error desconocido';
+      throw new BadRequestException(
+        `Error al subir la imagen: ${errorMessage}`,
+      );
     }
   }
 

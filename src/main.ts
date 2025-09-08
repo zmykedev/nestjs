@@ -22,20 +22,7 @@ async function bootstrap() {
 
   const port = process.env.PORT || configService.get<number>('PORT') || 3000;
 
-  // Console logs para debug en Railway
-  console.log('=== RAILWAY DEBUG INFO ===');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('PORT from env:', process.env.PORT);
-  console.log('PORT from config:', port);
-  console.log('DATABASE_HOST:', process.env.DATABASE_HOST);
-  console.log('DATABASE_PORT:', process.env.DATABASE_PORT);
-  console.log('DATABASE_USER:', process.env.DATABASE_USER);
-  console.log('DATABASE_NAME:', process.env.DATABASE_NAME);
-  console.log('JWT_SECRET exists:', !!process.env.JWT_SECRET);
-  console.log('=== GCP CONFIGURATION ===');
-  console.log('GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
-  console.log('GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
-  console.log('GCS_KEY_FILE:', process.env.GCS_KEY_FILE);
+
 
   // Reemplaza tu lógica CORS actual con esto:
   const nodeEnv = process.env.NODE_ENV;
