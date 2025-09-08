@@ -26,7 +26,7 @@ export default registerAs('config', () => {
     gcs: {
       projectId: process.env.GCS_PROJECT_ID,
       bucketName: process.env.GCS_BUCKET_NAME,
-      keyFile: process.env.GCS_KEY_FILE,
+      keyFile: process.env.GCS_KEY_FILE, // Keep for fallback in development
     },
   };
 });
