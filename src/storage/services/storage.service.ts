@@ -78,4 +78,51 @@ export class StorageService {
       throw new BadRequestException('Failed to upload file to GCP');
     }
   }
+
+  /**
+   * Upload file to Google Cloud Storage and return public URL
+   * @param filePath - Local file path to upload
+   * @param customFileName - Custom name for the uploaded file
+   * @returns Promise with upload result including public URL
+   */
+  async uploadFileAndGetPublicUrl(
+    filePath: string,
+    customFileName: string,
+  ): Promise<{
+    publicUrl: string;
+    fileName: string;
+    bucketName: string;
+  }> {
+    try {
+      if (!this.isInitialized) {
+        throw new BadRequestException('Google Cloud Storage is not configured');
+      }
+
+      const bucket = this.storage.bucket(this.bucketName);
+
+      // Upload file with custom name
+      const [file] = await bucket.upload(filePath, {
+        destination: customFileName,
+        metadata: {
+          cacheControl: 'public, max-age=31536000',
+        },
+      });
+
+      // Generate public URL (bucket is already configured as public)
+      const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${customFileName}`;
+
+      this.logger.log(
+        `File uploaded successfully with public URL: ${publicUrl}`,
+      );
+
+      return {
+        publicUrl,
+        fileName: customFileName,
+        bucketName: this.bucketName,
+      };
+    } catch (error) {
+      this.logger.error('Error uploading file to GCP with public URL:', error);
+      throw new BadRequestException('Failed to upload file to GCP');
+    }
+  }
 }
