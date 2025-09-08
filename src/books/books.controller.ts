@@ -238,6 +238,107 @@ export class BooksController {
     }
   }
 
+  @Get('genres')
+  @ApiOperation({ summary: 'Get all available genres' })
+  @ApiResponse({
+    status: 200,
+    description: 'Genres retrieved successfully',
+    type: [String],
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getGenres(): string[] {
+    return this.booksService.getGenres();
+  }
+
+  @Get('genres/cmpc-specific')
+  @ApiOperation({ summary: 'Get CMPC specific genres' })
+  @ApiResponse({
+    status: 200,
+    description: 'CMPC specific genres retrieved successfully',
+    type: [String],
+  })
+  getCmpcSpecificGenres(): string[] {
+    return this.booksService.getCmpcSpecificGenres();
+  }
+
+  @Get('genres/traditional')
+  @ApiOperation({ summary: 'Get traditional genres' })
+  @ApiResponse({
+    status: 200,
+    description: 'Traditional genres retrieved successfully',
+    type: [String],
+  })
+  getTraditionalGenres(): string[] {
+    return this.booksService.getTraditionalGenres();
+  }
+
+  @Get('genres/descriptions')
+  @ApiOperation({ summary: 'Get genres with descriptions' })
+  @ApiResponse({
+    status: 200,
+    description: 'Genres with descriptions retrieved successfully',
+  })
+  getGenreDescriptions() {
+    return this.booksService.getGenreDescriptions();
+  }
+
+  @Get('authors')
+  @ApiOperation({ summary: 'Get all available authors' })
+  @ApiResponse({
+    status: 200,
+    description: 'Authors retrieved successfully',
+    type: [String],
+  })
+  getAuthors(): string[] {
+    return this.booksService.getAuthors();
+  }
+
+  @Get('authors/cmpc-specific')
+  @ApiOperation({ summary: 'Get CMPC specific authors' })
+  @ApiResponse({
+    status: 200,
+    description: 'CMPC specific authors retrieved successfully',
+    type: [String],
+  })
+  getCmpcSpecificAuthors(): string[] {
+    return this.booksService.getCmpcSpecificAuthors();
+  }
+
+  @Get('authors/traditional')
+  @ApiOperation({ summary: 'Get traditional authors' })
+  @ApiResponse({
+    status: 200,
+    description: 'Traditional authors retrieved successfully',
+    type: [String],
+  })
+  getTraditionalAuthors(): string[] {
+    return this.booksService.getTraditionalAuthors();
+  }
+
+  @Get('authors/descriptions')
+  @ApiOperation({ summary: 'Get authors with descriptions' })
+  @ApiResponse({
+    status: 200,
+    description: 'Authors with descriptions retrieved successfully',
+  })
+  getAuthorDescriptions() {
+    return this.booksService.getAuthorDescriptions();
+  }
+
+  @Get('publishers')
+  @ApiOperation({ summary: 'Get all available publishers' })
+  @ApiResponse({
+    status: 200,
+    description: 'Publishers retrieved successfully',
+    type: [String],
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  getPublishers(): string[] {
+    return this.booksService.getPublishers();
+  }
+
   @Get('export/csv')
   @ApiOperation({ summary: 'Export all books to CSV format' })
   @ApiResponse({ status: 200, description: 'CSV exported successfully' })
