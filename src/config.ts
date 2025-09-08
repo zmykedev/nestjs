@@ -24,8 +24,8 @@ export default registerAs('config', () => {
       accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION ?? '1h',
     },
     gcs: {
-      projectId: process.env.GCS_PROJECT_ID,
-      bucketName: process.env.GCS_BUCKET_NAME,
+      projectId: process.env.GCS_PROJECT_ID || 'strategic-arc-471303-m4',
+      bucketName: process.env.GCS_BUCKET_NAME || 'new-books',
       keyFile: process.env.GCS_KEY_FILE, // Keep for fallback in development
     },
   };

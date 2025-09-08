@@ -62,10 +62,24 @@ export class SecretService {
       // Parse and return the JSON credentials
       return JSON.parse(payload);
     } catch (error: any) {
-      this.logger.error(
-        'Error accessing Google credentials from Secret Manager:',
-        error,
-      );
+      this.logger.error('🚨 SECRET MANAGER ERROR 🚨');
+      this.logger.error(`Error type: ${error.constructor?.name || 'Unknown'}`);
+      this.logger.error(`Error message: ${error.message}`);
+      this.logger.error(`Error code: ${error.code || 'N/A'}`);
+      this.logger.error(`Error status: ${error.status || 'N/A'}`);
+      this.logger.error(`Secret name attempted: projects/285102780186/secrets/GOOGLE_CREDENTIALS/versions/latest`);
+      this.logger.error('Full error:', error);
+      
+      if (error.message?.includes('permission')) {
+        this.logger.error('🔒 Permission denied accessing Secret Manager');
+        this.logger.error('Check if service account has secretmanager.secretAccessor role');
+      }
+      
+      if (error.message?.includes('not found')) {
+        this.logger.error('🔍 Secret not found in Secret Manager');
+        this.logger.error('Verify that GOOGLE_CREDENTIALS secret exists');
+      }
+      
       throw new Error(`Failed to get Google credentials: ${error.message}`);
     }
   }
@@ -107,18 +121,42 @@ export class SecretService {
   async getCredentials(): Promise<any> {
     const environment = this.configService.get<string>('config.env');
 
-    try {
-      // In production, always use Secret Manager
-      if (environment === 'production') {
-        return await this.getGoogleCredentials();
-      }
+    this.logger.log(`Getting credentials for environment: ${environment}`);
+    this.logger.log(`Project ID from config: ${this.projectId}`);
 
-      // In development, skip Secret Manager and use default authentication
-      this.logger.log('Development mode: using default Google Cloud authentication');
+    try {
+      // ALWAYS try Secret Manager first (both dev and prod)
+      this.logger.log('Attempting Secret Manager credentials...');
       
-      // Return null to let Google Cloud SDK use default authentication
-      // This will work if gcloud is configured or if running on GCP
-      return null;
+      try {
+        const credentials = await this.getGoogleCredentials();
+        this.logger.log('✅ Secret Manager credentials obtained successfully');
+        return credentials;
+      } catch (secretError) {
+        this.logger.warn('❌ Secret Manager failed, trying fallback...');
+        this.logger.warn(`Secret Manager error: ${secretError.message}`);
+        
+        // Only in development, try file fallback
+        if (environment !== 'production') {
+          this.logger.log('Development mode: trying local file fallback');
+          try {
+            const fileCredentials = await this.getGoogleCredentialsFromFile();
+            this.logger.log('✅ Local file credentials obtained successfully');
+            return fileCredentials;
+          } catch (fileError) {
+            this.logger.warn('❌ File credentials also failed');
+            this.logger.warn(`File error: ${fileError.message}`);
+            
+            // Final fallback: use default authentication
+            this.logger.log('Using default Google Cloud authentication as final fallback');
+            return null;
+          }
+        } else {
+          // In production, Secret Manager is required
+          this.logger.error('🚨 Production mode: Secret Manager is required but failed');
+          throw secretError;
+        }
+      }
       
     } catch (error) {
       this.logger.error('All credential methods failed:', error);
