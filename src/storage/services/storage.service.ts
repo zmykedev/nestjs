@@ -32,14 +32,22 @@ export class StorageService {
       console.log('NODE_ENV:', this.configService.get<string>('config.env'));
       console.log('Raw GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
       console.log('Raw GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
+      console.log('Raw GCS_KEY_FILE:', process.env.GCS_KEY_FILE);
+      console.log('Process ENV keys:', Object.keys(process.env).filter(key => key.includes('GCS')));
+      console.log('All ENV vars starting with GCS:', JSON.stringify(
+        Object.keys(process.env)
+          .filter(key => key.startsWith('GCS'))
+          .reduce((obj, key) => { obj[key] = process.env[key]; return obj; }, {})
+      ));
       console.log('Using Secret Manager for credentials...');
       console.log('===================================');
 
       if (!projectId || !bucketName) {
-        this.logger.warn(
-          'Google Cloud Storage not configured. File uploads will be disabled.',
-        );
-        this.logger.warn('Missing projectId or bucketName');
+        this.logger.error('🚨 GOOGLE CLOUD STORAGE CONFIGURATION ERROR 🚨');
+        this.logger.error(`Project ID: "${projectId}" (${typeof projectId}) - ${projectId ? 'OK' : 'MISSING!'}`);
+        this.logger.error(`Bucket Name: "${bucketName}" (${typeof bucketName}) - ${bucketName ? 'OK' : 'MISSING!'}`);
+        this.logger.error('Google Cloud Storage not configured. File uploads will be disabled.');
+        this.logger.error('Missing projectId or bucketName');
         return;
       }
 
@@ -70,8 +78,15 @@ export class StorageService {
         'Google Cloud Storage initialized successfully with Secret Manager',
       );
     } catch (error) {
+      this.logger.error('🚨 INITIALIZATION ERROR 🚨');
+      this.logger.error(`Error type: ${error.constructor?.name || 'Unknown'}`);
+      this.logger.error(`Error message: ${error.message}`);
       this.logger.error('Failed to initialize Google Cloud Storage:', error);
       this.isInitialized = false;
+      
+      // Set storage to null to be safe
+      this.storage = null;
+      this.bucketName = null;
     }
   }
 
@@ -112,7 +127,17 @@ export class StorageService {
     bucketName: string;
   }> {
     try {
+      this.logger.log('🔄 Starting file upload process...');
+      this.logger.log(`File path: ${filePath}`);
+      this.logger.log(`Custom file name: ${customFileName}`);
+      this.logger.log(`Is initialized: ${this.isInitialized}`);
+      this.logger.log(`Bucket name: ${this.bucketName}`);
+      
       if (!this.isInitialized) {
+        this.logger.error('🚨 UPLOAD ERROR: Google Cloud Storage is not initialized');
+        this.logger.error(`Initialization status: ${this.isInitialized}`);
+        this.logger.error(`Storage instance: ${this.storage ? 'EXISTS' : 'NULL'}`);
+        this.logger.error(`Bucket name: ${this.bucketName || 'NOT SET'}`);
         throw new BadRequestException('Google Cloud Storage is not configured');
       }
 
@@ -139,6 +164,29 @@ export class StorageService {
         bucketName: this.bucketName,
       };
     } catch (error) {
+      this.logger.error('🚨 UPLOAD ERROR DETAILS 🚨');
+      this.logger.error(`Error type: ${error.constructor.name}`);
+      this.logger.error(`Error message: ${error.message}`);
+      this.logger.error(`Error code: ${error.code || 'N/A'}`);
+      this.logger.error(`Error status: ${error.status || 'N/A'}`);
+      this.logger.error(`Full error:`, error);
+      
+      // Check specific error types
+      if (error.message?.includes('credentials')) {
+        this.logger.error('🔑 CREDENTIALS ERROR: Authentication failed');
+        this.logger.error('This is likely a Google Cloud authentication issue');
+      }
+      
+      if (error.message?.includes('permission')) {
+        this.logger.error('🔒 PERMISSION ERROR: Access denied');
+        this.logger.error('Check if service account has proper permissions');
+      }
+      
+      if (error.message?.includes('bucket')) {
+        this.logger.error('🪣 BUCKET ERROR: Bucket access issue');
+        this.logger.error(`Bucket name: ${this.bucketName}`);
+      }
+      
       this.logger.error('Error uploading file to GCP with public URL:', error);
       throw new BadRequestException('Failed to upload file to GCP');
     }
