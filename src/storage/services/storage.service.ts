@@ -1,6 +1,7 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
+import { SecretService } from './secret.service';
 
 @Injectable()
 export class StorageService {
@@ -9,27 +10,29 @@ export class StorageService {
   private bucketName: string;
   private isInitialized = false;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    private secretService: SecretService,
+  ) {
     console.log('StorageService constructor called - starting initialization');
-    this.initializeStorage();
+    void this.initializeStorage();
   }
 
-  private initializeStorage() {
+  private async initializeStorage() {
     try {
       const projectId = this.configService.get<string>('config.gcs.projectId');
       const bucketName = this.configService.get<string>(
         'config.gcs.bucketName',
       );
-      const keyFile = this.configService.get<string>('config.gcs.keyFile');
 
       console.log('=== GCP STORAGE INITIALIZATION ===');
       console.log('Project ID:', projectId);
       console.log('Bucket Name:', bucketName);
-      console.log('Key File:', keyFile);
-      console.log(
-        'GOOGLE_APPLICATION_CREDENTIALS:',
-        process.env.GOOGLE_APPLICATION_CREDENTIALS,
-      );
+      console.log('Key File (fallback):', this.configService.get<string>('config.gcs.keyFile'));
+      console.log('NODE_ENV:', this.configService.get<string>('config.env'));
+      console.log('Raw GCS_PROJECT_ID:', process.env.GCS_PROJECT_ID);
+      console.log('Raw GCS_BUCKET_NAME:', process.env.GCS_BUCKET_NAME);
+      console.log('Using Secret Manager for credentials...');
       console.log('===================================');
 
       if (!projectId || !bucketName) {
@@ -40,19 +43,34 @@ export class StorageService {
         return;
       }
 
+      // Get credentials from Secret Manager (with fallback to default)
+      const credentials: any = await this.secretService.getCredentials();
+
       // Initialize Google Cloud Storage
-      this.storage = new Storage({
-        projectId,
-        keyFilename: keyFile,
-      });
+      // Use the correct project ID (numeric from Google Cloud Console)
+      const correctProjectId = 'strategic-arc-471303-m4';
+      
+      if (credentials) {
+        this.storage = new Storage({
+          projectId: correctProjectId,
+          credentials,
+        });
+        this.logger.log('Using Secret Manager credentials');
+      } else {
+        this.storage = new Storage({
+          projectId: correctProjectId,
+        });
+        this.logger.log('Using default Google Cloud authentication');
+      }
 
       this.bucketName = bucketName;
       this.isInitialized = true;
 
-      this.logger.log('Google Cloud Storage initialized successfully');
+      this.logger.log(
+        'Google Cloud Storage initialized successfully with Secret Manager',
+      );
     } catch (error) {
       this.logger.error('Failed to initialize Google Cloud Storage:', error);
-
       this.isInitialized = false;
     }
   }
@@ -101,7 +119,7 @@ export class StorageService {
       const bucket = this.storage.bucket(this.bucketName);
 
       // Upload file with custom name
-      const [file] = await bucket.upload(filePath, {
+      await bucket.upload(filePath, {
         destination: customFileName,
         metadata: {
           cacheControl: 'public, max-age=31536000',
