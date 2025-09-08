@@ -27,9 +27,6 @@ async function bootstrap() {
 
   const isDev = nodeEnv === 'dev' || nodeEnv !== 'production';
 
-  // CORS siempre habilitado, pero de manera compliant
-  console.log('NODE_ENV:', nodeEnv);
-
   if (isDev) {
     // Desarrollo: orígenes específicos con credentials
     app.enableCors({
@@ -41,7 +38,7 @@ async function bootstrap() {
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
         'http://127.0.0.1:80',
-        'https://cmpc-books.netlify.app',
+        
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
@@ -54,7 +51,6 @@ async function bootstrap() {
       ],
       credentials: true,
     });
-    console.log('✅ CORS habilitado para desarrollo con credentials');
   } else {
     // Producción: configuración flexible para múltiples dominios
     const allowedOrigins = [
@@ -76,8 +72,6 @@ async function bootstrap() {
         // Permitir requests sin origin (mobile apps, postman, etc.)
         if (!origin) return callback(null, true);
 
-        // Temporalmente permitir todos los orígenes para desarrollo
-        console.log('✅ CORS permitido para origin:', origin);
         return callback(null, true);
       },
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
@@ -91,10 +85,7 @@ async function bootstrap() {
       ],
       credentials: true,
     });
-    console.log(
-      '✅ CORS habilitado para producción con dominios:',
-      allowedOrigins,
-    );
+   
   }
 
   app.useGlobalPipes(
@@ -108,8 +99,7 @@ async function bootstrap() {
   setupSwagger(app);
 
   await app.listen(Number(port), '0.0.0.0');
-  console.log(`🚀 Server is running on port ${port}`);
-  console.log(`🌍 Environment: ${process.env.NODE_ENV}`);
+
 }
 
 void bootstrap();

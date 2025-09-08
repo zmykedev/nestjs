@@ -91,4 +91,22 @@ export class QueryBookDto {
   @Min(1)
   @Max(100)
   limit?: number = 10;
+
+  // Add price filters for Sequelize service compatibility
+  @ApiPropertyOptional({ description: 'Precio mínimo' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  priceMin?: number;
+
+  @ApiPropertyOptional({ description: 'Precio máximo' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  priceMax?: number;
 }
+
+// Export alias for backward compatibility
+export { QueryBookDto as BookQueryDto };

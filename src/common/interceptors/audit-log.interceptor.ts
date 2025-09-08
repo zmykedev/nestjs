@@ -11,13 +11,13 @@ import { Request, Response } from 'express';
 import {
   AuditLogService,
   CreateAuditLogDto,
-} from '../services/audit-log.service';
+} from '../services/audit-log.service.sequelize';
 import {
   AuditLogAction,
   AuditLogStatus,
   AuditLogLevel,
-} from '../entities/audit-log.entity';
-import { BooksService } from '../../books/books.service';
+} from '../models/audit-log.model';
+import { BooksService } from '../../books/services/books.service.sequelize';
 
 @Injectable()
 export class AuditLogInterceptor implements NestInterceptor {
@@ -39,6 +39,7 @@ export class AuditLogInterceptor implements NestInterceptor {
     // Obtener información del usuario si está autenticado
     const user = (request as any).user;
     const userId = user?.id || user?.sub;
+    const numericUserId = userId ? Number(userId) : undefined;
     const userEmail = user?.email;
     const userName = user?.firstName
       ? `${user.firstName} ${user.lastName || ''}`.trim()
@@ -60,7 +61,7 @@ export class AuditLogInterceptor implements NestInterceptor {
 
     // Crear DTO base para el log
     const auditLogDto: CreateAuditLogDto = {
-      user_id: userId,
+      user_id: numericUserId,
       user_email: userEmail,
       user_name: userName,
       action,
