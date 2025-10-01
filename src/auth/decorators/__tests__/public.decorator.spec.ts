@@ -16,23 +16,27 @@ describe('Public Decorator', () => {
   });
 
   it('should call SetMetadata with correct parameters', () => {
-    const mockSetMetadata = SetMetadata as jest.MockedFunction<typeof SetMetadata>;
-    
+    const mockSetMetadata = SetMetadata as jest.MockedFunction<
+      typeof SetMetadata
+    >;
+
     // Call the Public decorator
     Public();
-    
+
     // Verify SetMetadata was called with correct parameters
     expect(mockSetMetadata).toHaveBeenCalledWith(IS_PUBLIC_KEY, true);
     expect(mockSetMetadata).toHaveBeenCalledTimes(1);
   });
 
   it('should return the result of SetMetadata', () => {
-    const mockSetMetadata = SetMetadata as jest.MockedFunction<typeof SetMetadata>;
+    const mockSetMetadata = SetMetadata as jest.MockedFunction<
+      typeof SetMetadata
+    >;
     const mockResult = Symbol('decorator');
     mockSetMetadata.mockReturnValue(mockResult as any);
-    
+
     const result = Public();
-    
+
     expect(result).toBe(mockResult);
   });
 

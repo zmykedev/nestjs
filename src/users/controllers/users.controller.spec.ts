@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './users.controller';
-import { UsersService } from '../services/users.service.sequelize';
+import { UsersService } from '../services/users.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
@@ -37,7 +37,10 @@ describe('UsersController', () => {
     const mockUser = { id: 1, email: 'test@test.com' };
     usersService.create.mockResolvedValue(mockUser as any);
 
-    const result = await controller.create({ email: 'test@test.com', password: 'password' } as any);
+    const result = await controller.create({
+      email: 'test@test.com',
+      password: 'password',
+    } as any);
     expect(result).toBeDefined();
   });
 
@@ -61,7 +64,9 @@ describe('UsersController', () => {
     const mockUser = { id: 1, email: 'test@test.com' };
     usersService.update.mockResolvedValue(mockUser as any);
 
-    const result = await controller.update('1', { email: 'updated@test.com' } as any);
+    const result = await controller.update('1', {
+      email: 'updated@test.com',
+    } as any);
     expect(result).toBeDefined();
   });
 

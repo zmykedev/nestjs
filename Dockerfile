@@ -1,56 +1,52 @@
-# Multi-stage build for production optimization
+# Dockerfile para la aplicación NestJS
 FROM node:18-alpine AS builder
 
+# Instalar pnpm
+RUN npm install -g pnpm
+
+# Establecer directorio de trabajo
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copiar archivos de dependencias
+COPY package.json pnpm-lock.yaml ./
 
-# Install ALL dependencies (including devDependencies for build)
-# Use npm install if package-lock.json doesn't exist
-RUN if [ -f package-lock.json ]; then npm ci; else npm install; fi
+# Instalar dependencias
+RUN pnpm install --frozen-lockfile
 
-# Copy source code
+# Copiar código fuente
 COPY . .
 
-# Build the application using npx to avoid global installation
-RUN npx nest build
+# Compilar la aplicación
+RUN pnpm run build
 
-# Production stage
+# Etapa de producción
 FROM node:18-alpine AS production
 
-WORKDIR /app
+# Instalar pnpm
+RUN npm install -g pnpm
 
-# Create non-root user for security
+# Crear usuario no-root
 RUN addgroup -g 1001 -S nodejs
 RUN adduser -S nestjs -u 1001
 
-# Copy package files
-COPY package*.json ./
+# Establecer directorio de trabajo
+WORKDIR /app
 
-# Install only production dependencies
-# Use npm install if package-lock.json doesn't exist
-RUN if [ -f package-lock.json ]; then \
-      npm ci --omit=dev; \
-    else \
-      npm install --omit=dev; \
-    fi && npm cache clean --force
+# Copiar archivos de dependencias
+COPY package.json pnpm-lock.yaml ./
 
-# Copy built application from builder stage
+# Instalar solo dependencias de producción
+RUN pnpm install --prod --frozen-lockfile
+
+# Copiar código compilado desde la etapa de builder
 COPY --from=builder /app/dist ./dist
 
-# Copy necessary files (only if they exist)
-COPY --from=builder /app/src/config ./src/config
-
-# Change ownership to non-root user
+# Cambiar propietario de los archivos
 RUN chown -R nestjs:nodejs /app
 USER nestjs
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/v1/books/test', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
+# Exponer puerto
 EXPOSE 3000
 
-# Use production start command
+# Comando de inicio
 CMD ["node", "dist/main.js"]

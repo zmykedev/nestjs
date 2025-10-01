@@ -2,8 +2,6 @@ import { AppModule } from './app.module';
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
-import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { setupSwagger } from './swagger.config';
 
 async function bootstrap() {
@@ -11,12 +9,6 @@ async function bootstrap() {
     snapshot: true,
   });
   app.setGlobalPrefix('api/v1');
-
-  // Global logging interceptor
-  app.useGlobalInterceptors(new LoggingInterceptor());
-
-  // Global exception filter
-  app.useGlobalFilters(new HttpExceptionFilter());
 
   const configService = app.get(ConfigService);
 
@@ -38,7 +30,6 @@ async function bootstrap() {
         'http://127.0.0.1:5173',
         'http://127.0.0.1:3000',
         'http://127.0.0.1:80',
-        
       ],
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
       allowedHeaders: [
@@ -85,7 +76,6 @@ async function bootstrap() {
       ],
       credentials: true,
     });
-   
   }
 
   app.useGlobalPipes(
@@ -99,7 +89,6 @@ async function bootstrap() {
   setupSwagger(app);
 
   await app.listen(Number(port), '0.0.0.0');
-
 }
 
 void bootstrap();

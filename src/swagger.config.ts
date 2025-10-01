@@ -187,7 +187,7 @@ curl -X GET "http://localhost:3001/api/v1/audit-logs/inventory/export" \\
 
 ## 🔧 Configuración y Despliegue
 - **Puerto**: 3001 (desarrollo)
-- **Base de datos**: PostgreSQL con Sequelize ORM
+- **Base de datos**: PostgreSQL con TypeORM
 - **Storage**: Google Cloud Storage / ImgBB
 - **Autenticación**: JWT con refresh tokens
 - **Validación**: Class-validator con DTOs

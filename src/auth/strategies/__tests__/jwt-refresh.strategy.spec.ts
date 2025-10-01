@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtRefreshTokenStrategy } from '../jwt-refresh.strategy';
-import { UsersService } from '../../../users/services/users.service.sequelize';
+import { UsersService } from '../../../users/services/users.service';
 import config from '../../../config';
 
 describe('JwtRefreshTokenStrategy', () => {
@@ -65,7 +65,9 @@ describe('JwtRefreshTokenStrategy', () => {
       lastName: 'Doe',
     };
 
-    usersService.getUserIfRefreshTokenMatches.mockResolvedValue(mockUser as any);
+    usersService.getUserIfRefreshTokenMatches.mockResolvedValue(
+      mockUser as any,
+    );
 
     const result = await strategy.validate(mockRequest, mockPayload);
 

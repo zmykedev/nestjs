@@ -1,5 +1,9 @@
 import { validate } from 'class-validator';
-import { CreateUserDto, UpdateUserDto, DefaultColumnsResponse } from '../create.user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  DefaultColumnsResponse,
+} from '../create.user.dto';
 
 describe('CreateUserDto', () => {
   it('should create a valid CreateUserDto instance', () => {

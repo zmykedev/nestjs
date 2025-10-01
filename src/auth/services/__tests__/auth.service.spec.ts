@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '../auth.service';
-import { UsersService } from '../../../users/services/users.service.sequelize';
+import { UsersService } from '../../../users/services/users.service';
 import { CreateUserDto } from '../../../users/dto/create.user.dto';
 import { PayloadToken } from '../../models/token.model';
 import config from '../../../config';
@@ -120,7 +120,9 @@ describe('AuthService', () => {
 
       const result = await service.validateUser(email, password);
 
-      expect(usersService.findByEmailAndGetPassword).toHaveBeenCalledWith(email);
+      expect(usersService.findByEmailAndGetPassword).toHaveBeenCalledWith(
+        email,
+      );
       expect(mockedBcrypt.compare).toHaveBeenCalled();
       expect(result).toEqual({ id: 1 });
     });
@@ -171,7 +173,9 @@ describe('AuthService', () => {
 
       service.validateUser(email, encryptedPassword);
 
-      expect(usersService.findByEmailAndGetPassword).toHaveBeenCalledWith(email);
+      expect(usersService.findByEmailAndGetPassword).toHaveBeenCalledWith(
+        email,
+      );
     });
   });
 

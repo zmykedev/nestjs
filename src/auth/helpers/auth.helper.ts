@@ -1,4 +1,4 @@
-import { User } from '../../users/models/user.model';
+import { User } from '../../users/entities/user.entity';
 
 export function buildSession(
   userInfo: User,
@@ -17,9 +17,9 @@ export function buildSession(
       id: userInfo.id,
       email: userInfo.email,
 
-      firstName: userInfo.firstName,
-      lastName: userInfo.lastName,
-      createdAt: userInfo.createdAt,
+      firstName: userInfo.first_name,
+      lastName: userInfo.last_name,
+      createdAt: userInfo.created_at,
       updatedAt: new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
     },

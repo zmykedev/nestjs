@@ -1,19 +1,20 @@
 import { buildSession } from '../auth.helper';
-import { User } from '../../../users/models/user.model';
+import { User } from '../../../users/entities/user.entity';
 
 describe('AuthHelper', () => {
   const mockUser = {
     id: 1,
     email: 'test@example.com',
     password: 'hashedpassword',
-    firstName: 'John',
-    lastName: 'Doe',
-    role: 'user',
-    createdAt: new Date('2023-01-01'),
-    updatedAt: new Date('2023-01-01'),
-    deletedAt: null,
-    refreshToken: null,
-  } as any;
+    first_name: 'John',
+    last_name: 'Doe',
+    role_id: 1,
+    is_active: true,
+    created_at: new Date('2023-01-01'),
+    updated_at: new Date('2023-01-01'),
+    deleted_at: null,
+    refresh_token: null,
+  } as User;
 
   it('should build session correctly', () => {
     const accessToken = 'access-token-123';
@@ -48,9 +49,9 @@ describe('AuthHelper', () => {
 
     expect(session.user.id).toBe(mockUser.id);
     expect(session.user.email).toBe(mockUser.email);
-    expect(session.user.firstName).toBe(mockUser.firstName);
-    expect(session.user.lastName).toBe(mockUser.lastName);
-    expect(session.user.createdAt).toBe(mockUser.createdAt);
+    expect(session.user.firstName).toBe(mockUser.first_name);
+    expect(session.user.lastName).toBe(mockUser.last_name);
+    expect(session.user.createdAt).toBe(mockUser.created_at);
     expect(typeof session.user.updatedAt).toBe('string');
     expect(typeof session.user.lastLoginAt).toBe('string');
   });

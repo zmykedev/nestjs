@@ -3,7 +3,7 @@ import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import config from '../../config';
-import { UsersService } from '../../users/services/users.service.sequelize';
+import { UsersService } from '../../users/services/users.service';
 import { CreateUserDto } from '../../users/dto/create.user.dto';
 import { PayloadToken } from './../models/token.model';
 import { buildSession } from '../helpers/auth.helper';
