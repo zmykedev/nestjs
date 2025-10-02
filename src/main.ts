@@ -5,79 +5,77 @@ import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './swagger.config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
-    snapshot: true,
-  });
+  // Create the NestJS application
+  const app = await NestFactory.create(AppModule);
+
+  /**
+   * @description
+   * Set a global prefix for all API routes.
+   * Example: /api/v1/...
+   */
   app.setGlobalPrefix('api/v1');
 
+  // Load environment configuration
   const configService = app.get(ConfigService);
 
-  const port = process.env.PORT || configService.get<number>('PORT') || 3000;
+  const port = configService.get<number>('PORT');
+  const env = configService.get<string>('NODE_ENV');
+  const frontendUrl = configService.get<string>('FRONTEND_URL');
+  const production = env === 'production';
 
-  // Reemplaza tu lógica CORS actual con esto:
-  const nodeEnv = process.env.NODE_ENV;
+  /**
+   * @description
+   * List of allowed origins for CORS configuration.
+   * This ensures only trusted domains can access the API.
+   */
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:5173',
+    'http://localhost:80',
+    'http://127.0.0.1:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:80',
+  ];
 
-  const isDev = nodeEnv === 'dev' || nodeEnv !== 'production';
-
-  if (isDev) {
-    // Desarrollo: orígenes específicos con credentials
-    app.enableCors({
-      origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:5173',
-        'http://localhost:80', // Para Docker local
-        'http://127.0.0.1:5173',
-        'http://127.0.0.1:3000',
-        'http://127.0.0.1:80',
-      ],
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization',
-        'Bearer',
-      ],
-      credentials: true,
-    });
-  } else {
-    // Producción: configuración flexible para múltiples dominios
-    const allowedOrigins = [
-      'https://cmpc-books.netlify.app',
-      'https://cmpc-frontend.netlify.app', // Si tienes otro dominio
-      'http://localhost:80', // Para testing local
-      'http://localhost:3000', // Para testing local
-      'http://localhost:5173', // Para Vite dev server
-      'http://127.0.0.1:5173', // Para Vite dev server
-    ];
-
-    // Agregar dominio desde variable de entorno si existe
-    if (process.env.FRONTEND_URL) {
-      allowedOrigins.push(process.env.FRONTEND_URL);
-    }
-
-    app.enableCors({
-      origin: (origin, callback) => {
-        // Permitir requests sin origin (mobile apps, postman, etc.)
-        if (!origin) return callback(null, true);
-
-        return callback(null, true);
-      },
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-      allowedHeaders: [
-        'Origin',
-        'X-Requested-With',
-        'Content-Type',
-        'Accept',
-        'Authorization',
-        'Bearer',
-      ],
-      credentials: true,
-    });
+  // In production, allow the frontend URL from environment variables
+  if (production && frontendUrl) {
+    allowedOrigins.push(frontendUrl);
   }
 
+  /**
+   * @description
+   * Enable Cross-Origin Resource Sharing (CORS).
+   * - Allow requests without "origin" (e.g., Postman, curl).
+   * - In development, allow all origins.
+   * - In production, allow only the defined list of origins.
+   */
+  app.enableCors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (env === 'development') {
+        return callback(null, true);
+      }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('CORS not allowed'), false);
+    },
+    credentials: true,
+  });
+
+  /**
+   * @description
+   * Apply global validation pipes:
+   * - Transform request payloads to DTOs.
+   * - Remove unexpected fields.
+   * - Throw errors if non-whitelisted fields are included.
+   */
   app.useGlobalPipes(
     new ValidationPipe({
       transform: true,
@@ -86,8 +84,16 @@ async function bootstrap() {
     }),
   );
 
+  /**
+   * @description
+   * Initialize Swagger API documentation.
+   */
   setupSwagger(app);
 
+  /**
+   * @description
+   * Start the server and listen on all network interfaces.
+   */
   await app.listen(Number(port), '0.0.0.0');
 }
 
