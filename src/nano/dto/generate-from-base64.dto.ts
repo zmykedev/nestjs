@@ -8,6 +8,8 @@ export class GenerateFromBase64Dto {
 
   @IsString()
   @IsNotEmpty()
-  @MaxLength(50 * 1024 * 1024, { message: 'Base64 image is too large (max 50MB)' })
+  @MaxLength(50 * 1024 * 1024, {
+    message: 'Base64 image is too large (max 50MB)',
+  })
   base64Image: string;
 }

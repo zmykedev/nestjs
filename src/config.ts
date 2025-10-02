@@ -17,7 +17,7 @@ export default registerAs('config', () => {
     env: process.env.NODE_ENV,
     cors: process.env.CORS,
     jwt: {
-      jwtSecret: process.env.JWT_SECRET,
+      jwtSecret: process.env.JWT_SECRET || 'cmpc2024',
       jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
       refreshTokenExpiration: process.env.REFRESH_TOKEN_EXPIRATION,
       accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION,

@@ -10,9 +10,7 @@ export class NanoService {
   });
 
   async generateImage(promptText: string): Promise<string> {
-    const prompt = [
-      { text: promptText },
-    ];
+    const prompt = [{ text: promptText }];
 
     const response = await this.ai.models.generateContent({
       model: 'gemini-2.5-flash-image',
@@ -25,13 +23,13 @@ export class NanoService {
         const buffer = Buffer.from(imageData, 'base64');
         const fileName = `generated-${Date.now()}.png`;
         const filePath = path.join(__dirname, '../../public', fileName);
-        
+
         // Ensure public directory exists
         const publicDir = path.dirname(filePath);
         if (!fs.existsSync(publicDir)) {
           fs.mkdirSync(publicDir, { recursive: true });
         }
-        
+
         fs.writeFileSync(filePath, buffer);
         return `/public/${fileName}`;
       }
@@ -68,13 +66,13 @@ export class NanoService {
         const buffer = Buffer.from(imageData, 'base64');
         const fileName = `generated-from-image-${Date.now()}.png`;
         const filePath = path.join(__dirname, '../../public', fileName);
-        
+
         // Ensure public directory exists
         const publicDir = path.dirname(filePath);
         if (!fs.existsSync(publicDir)) {
           fs.mkdirSync(publicDir, { recursive: true });
         }
-        
+
         fs.writeFileSync(filePath, buffer);
         return `/public/${fileName}`;
       }
@@ -89,7 +87,7 @@ export class NanoService {
   ): Promise<string> {
     // Remover el prefijo data:image/...;base64, si existe
     const base64Data = base64Image.replace(/^data:image\/[a-z]+;base64,/, '');
-    
+
     // Comprimir la imagen si es muy grande
     const compressedBase64 = await this.compressBase64Image(base64Data);
 
@@ -114,13 +112,13 @@ export class NanoService {
         const buffer = Buffer.from(imageData, 'base64');
         const fileName = `generated-from-base64-${Date.now()}.png`;
         const filePath = path.join(__dirname, '../../public', fileName);
-        
+
         // Ensure public directory exists
         const publicDir = path.dirname(filePath);
         if (!fs.existsSync(publicDir)) {
           fs.mkdirSync(publicDir, { recursive: true });
         }
-        
+
         fs.writeFileSync(filePath, buffer);
         return `/public/${fileName}`;
       }
@@ -133,7 +131,7 @@ export class NanoService {
     try {
       // Convertir base64 a buffer
       const buffer = Buffer.from(base64Data, 'base64');
-      
+
       // Si la imagen es menor a 1MB, no comprimir
       if (buffer.length < 1024 * 1024) {
         return base64Data;
@@ -141,7 +139,7 @@ export class NanoService {
 
       // Redimensionar la imagen para reducir el tamaño
       const resizedBuffer = await this.resizeImage(buffer, 1024, 1024);
-      
+
       // Convertir de vuelta a base64
       return resizedBuffer.toString('base64');
     } catch (error) {
@@ -150,10 +148,14 @@ export class NanoService {
     }
   }
 
-  private async resizeImage(buffer: Buffer, maxWidth: number, maxHeight: number): Promise<Buffer> {
+  private async resizeImage(
+    buffer: Buffer,
+    maxWidth: number,
+    maxHeight: number,
+  ): Promise<Buffer> {
     // Implementación simple de redimensionamiento sin dependencias externas
     // Para una implementación más robusta, se recomienda usar sharp o jimp
-    
+
     // Por ahora, retornamos el buffer original
     // En producción, deberías usar una librería como sharp
     return buffer;
