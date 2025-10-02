@@ -7,8 +7,7 @@ import {
   DeleteDateColumn,
   OneToMany,
 } from 'typeorm';
-import { AuthSession } from '../../auth/entities/auth-session.entity';
-import { AuditLog } from '../../common/entities/audit-log.entity';
+import { AuthSession } from './auth-session.entity';
 
 @Entity('users')
 export class User {
@@ -47,7 +46,4 @@ export class User {
 
   @OneToMany(() => AuthSession, (session) => session.user)
   sessions: AuthSession[];
-
-  @OneToMany(() => AuditLog, (log) => log.user)
-  audit_logs: AuditLog[];
 }

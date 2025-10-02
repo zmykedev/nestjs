@@ -21,12 +21,12 @@ import {
   LoginDto,
   PostLoginResponse,
 } from '../dto/login.dto';
-import { CreateUserDto } from '../../users/dto/create.user.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { PayloadToken } from '../models/token.model';
 
 import { AuthService } from '../services/auth.service';
 import JwtRefreshGuard from '../guards/jwt-refresh.guard';
+import { RegisterDto } from '../dto/register.dto';
 
 type AuthorizedRequest = Express.Request & {
   headers: { authorization: string };
@@ -44,7 +44,7 @@ export class AuthController {
       'Create a new user account with standard permissions. This endpoint is public and does not require authentication.',
   })
   @ApiBody({
-    type: CreateUserDto,
+    type: RegisterDto,
     description:
       'User registration data including email, password, and personal information',
   })
@@ -62,8 +62,8 @@ export class AuthController {
     description: 'Conflict - User with this email already exists',
   })
   @Post('register')
-  register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+  register(@Body() req: RegisterDto) {
+    return this.authService.register(req);
   }
 
   @ApiOperation({
@@ -87,65 +87,65 @@ export class AuthController {
   })
   @HttpCode(200)
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
+  async login(@Body() req: LoginDto) {
     const user = await this.authService.validateUser(
-      loginDto.email,
-      loginDto.password,
+      req.email,
+      req.password,
     );
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload: PayloadToken = {
+    return this.authService.login({
       id: user.id,
-    };
-    return this.authService.login(payload);
+    });
   }
 
-  @ApiOperation({
-    summary: 'User logout',
-    description:
-      'Logout the current user by invalidating their JWT tokens. Requires valid access token.',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Logout successful - tokens invalidated',
-    schema: {
-      type: 'object',
-      properties: {
-        message: { type: 'string', example: 'Logout successful' },
-      },
-    },
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or missing token',
-  })
-  @ApiBearerAuth('access-token')
-  @UseGuards(JwtAuthGuard)
-  @Get('logout')
-  async logOut(@Request() req: { user: PayloadToken }) {
-    await this.authService.logout(req.user);
-  }
-
-  @ApiOperation({
-    summary: 'Refresh access token',
-    description:
-      'Generate a new access token using a valid refresh token. Useful for maintaining user sessions.',
-  })
-  @ApiResponse({
-    status: 200,
-    type: GetRefreshResponse,
-    description: 'New access token generated successfully',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized - Invalid or expired refresh token',
-  })
-  @ApiBearerAuth('refresh-token')
-  @UseGuards(JwtRefreshGuard)
-  @Get('refresh')
-  refresh(@Req() req: AuthorizedRequest) {
-    return this.authService.createAccessTokenFromRefreshToken(req.user);
-  }
+  // @ApiOperation({
+  //   summary: 'User logout',
+  //   description:
+  //     'Logout the current user by invalidating their JWT tokens. Requires valid access token.',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: 'Logout successful - tokens invalidated',
+  //   schema: {
+  //     type: 'object',
+  //     properties: {
+  //       message: { type: 'string', example: 'Logout successful' },
+  //     },
+  //   },
+  // })
+  // @ApiResponse({
+  //   status: 401,
+  //   description: 'Unauthorized - Invalid or missing token',
+  // })
+  // @ApiBearerAuth('access-token')
+  // @UseGuards(JwtAuthGuard)
+  // @Get('logout')
+  // async logOut(@Request() req: { user: PayloadToken }) {
+  //   await this.authService.logout(req.user);
+  // }
+  //
+  // @ApiOperation({
+  //   summary: 'Refresh access token',
+  //   description:
+  //     'Generate a new access token using a valid refresh token. Useful for maintaining user sessions.',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   type: GetRefreshResponse,
+  //   description: 'New access token generated successfully',
+  // })
+  // @ApiResponse({
+  //   status: 401,
+  //   description: 'Unauthorized - Invalid or expired refresh token',
+  // })
+  // @ApiBearerAuth('refresh-token')
+  // @UseGuards(JwtRefreshGuard)
+  // @Get('refresh')
+  // refresh(@Req() req: AuthorizedRequest) {
+  //   return this.authService.createAccessTokenFromRefreshToken(req.user);
+  // }
 }
