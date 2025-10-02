@@ -31,7 +31,9 @@ export class UsersService {
 
     // Crear usuario con contraseña hasheada
     const user = this.userRepository.create({
-      ...createUserDto,
+      first_name: createUserDto.firstName,
+      last_name: createUserDto.lastName,
+      email: createUserDto.email,
       password: await bcrypt.hash(decryptedPassword, 10),
     });
 
