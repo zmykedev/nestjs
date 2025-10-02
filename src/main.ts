@@ -3,10 +3,18 @@ import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { setupSwagger } from './swagger.config';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
-  // Create the NestJS application
-  const app = await NestFactory.create(AppModule);
+  // Create the NestJS application with increased payload limits
+  const app = await NestFactory.create(AppModule, {
+    bodyParser: true,
+    rawBody: true,
+  });
+
+  // Configure Express to handle larger payloads (50MB limit)
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   /**
    * @description
