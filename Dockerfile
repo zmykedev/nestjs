@@ -41,6 +41,10 @@ RUN pnpm install --prod --frozen-lockfile
 # Copiar código compilado desde la etapa de builder
 COPY --from=builder /app/dist ./dist
 
+# Copiar migraciones y cualquier otro archivo necesario para migraciones
+COPY --from=builder /app/migrations ./migrations
+COPY --from=builder /app/src/config ./src/config
+
 # Cambiar propietario de los archivos
 RUN chown -R nestjs:nodejs /app
 USER nestjs
@@ -48,5 +52,5 @@ USER nestjs
 # Exponer puerto
 EXPOSE 3000
 
-# Comando de inicio
-CMD ["node", "dist/main.js"]
+# Ejecutar migraciones antes de iniciar la aplicación
+CMD pnpm run migration:run && node dist/main.js
