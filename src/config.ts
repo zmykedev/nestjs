@@ -2,10 +2,10 @@ import { registerAs } from '@nestjs/config';
 
 export default registerAs('config', () => {
   return {
-    port: Number(process.env.PORT ?? '3000'),
+    port: Number(process.env.PORT),
     db: {
-      host: process.env.DATABASE_HOST || 'localhost',
-      port: Number(process.env.DATABASE_PORT ?? '5432'),
+      host: process.env.DATABASE_HOST,
+      port: Number(process.env.DATABASE_PORT),
       user: process.env.DATABASE_USER,
       password: process.env.DATABASE_PASSWORD,
       name: process.env.DATABASE_NAME,
@@ -17,14 +17,11 @@ export default registerAs('config', () => {
     env: process.env.NODE_ENV,
     cors: process.env.CORS,
     jwt: {
-      jwtSecret: process.env.JWT_SECRET ?? 'defaultSecret123',
-      jwtRefreshSecret:
-        process.env.JWT_REFRESH_SECRET ?? 'defaultRefreshSecret123',
-      refreshTokenExpiration: process.env.REFRESH_TOKEN_EXPIRATION ?? '7d',
-      accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION ?? '1h',
+      jwtSecret: process.env.JWT_SECRET,
+      jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
+      refreshTokenExpiration: process.env.REFRESH_TOKEN_EXPIRATION,
+      accessTokenExpiration: process.env.ACCESS_TOKEN_EXPIRATION,
     },
-    imgbb: {
-      apiKey: process.env.IMGBB_API_KEY,
-    },
+    frontendUrl: process.env.FRONTEND_URL,
   };
 });

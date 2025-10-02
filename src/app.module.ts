@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigType } from '@nestjs/config';
-import { DevtoolsModule } from '@nestjs/devtools-integration';
+import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import config from './config';
@@ -15,21 +14,13 @@ import { getEnvFilePath } from './utils/config/envFile';
       envFilePath: getEnvFilePath(),
       validationOptions: { abortEarly: true },
     }),
-    DevtoolsModule.registerAsync({
-      inject: [config.KEY],
-      useFactory: (configService: ConfigType<typeof config>) => ({
-        enabled: configService.devtools.enabled,
-        port: configService.devtools.port,
-        http: process.env.NODE_ENV !== 'production',
-      }),
-    }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: process.env.DATABASE_HOST || 'localhost',
-      port: parseInt(process.env.DATABASE_PORT, 10) || 5432,
-      username: process.env.DATABASE_USER || 'postgres',
-      password: process.env.DATABASE_PASSWORD || '',
-      database: process.env.DATABASE_NAME || 'cmpc_db',
+      host: process.env.DATABASE_HOST,
+      port: parseInt(process.env.DATABASE_PORT, 10),
+      username: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      database: process.env.DATABASE_NAME,
       entities: [__dirname + '/**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/migrations/*{.ts,.js}'],
       synchronize: false, // Usar migraciones en lugar de synchronize

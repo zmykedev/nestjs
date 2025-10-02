@@ -1,6 +1,6 @@
 # Backend Template - NestJS
 
-Un template limpio y moderno para iniciar proyectos backend con NestJS, incluyendo autenticación JWT, gestión de usuarios y auditoría.
+Un template limpio y moderno para iniciar proyectos backend con NestJS, incluyendo autenticación JWT, gestión de usuarios.
 
 ## 🚀 Características
 
@@ -85,12 +85,6 @@ Un template limpio y moderno para iniciar proyectos backend con NestJS, incluyen
 - `PUT /users/:id` - Actualizar usuario
 - `DELETE /users/:id` - Eliminar usuario
 
-### Auditoría
-- `GET /audit-logs` - Ver logs de auditoría (requiere autenticación)
-
-### Storage
-- `POST /storage/upload` - Subir archivo
-
 ## 🧪 Testing
 
 ```bash
@@ -107,7 +101,7 @@ npm run test:e2e
 ## 📖 Documentación
 
 Una vez iniciado el servidor, la documentación de la API estará disponible en:
-- Swagger UI: `http://localhost:3000/api/docs`
+- Swagger UI: `http://localhost:3000/docs`
 
 ## 🏗️ Estructura del Proyecto
 
