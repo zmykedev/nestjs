@@ -101,7 +101,7 @@ npm run test:e2e
 ## 📖 Documentación
 
 Una vez iniciado el servidor, la documentación de la API estará disponible en:
-- Swagger UI: `http://localhost:3000/docs`
+- Swagger UI: `http://localhost:3001/docs`
 
 ## 🏗️ Estructura del Proyecto
 
