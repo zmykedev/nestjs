@@ -35,7 +35,6 @@ export class UsersService {
       last_name: createUserDto.lastName,
       email: createUserDto.email,
       password: await bcrypt.hash(decryptedPassword, 10),
-      role_id: 2,
     });
 
     const savedUser = await this.userRepository.save(user);
@@ -52,7 +51,6 @@ export class UsersService {
         'email',
         'first_name',
         'last_name',
-        'role_id',
         'is_active',
         'last_login',
         'created_at',
@@ -88,7 +86,6 @@ export class UsersService {
         'email',
         'first_name',
         'last_name',
-        'role_id',
         'is_active',
         'last_login',
         'created_at',
@@ -107,7 +104,6 @@ export class UsersService {
         'email',
         'first_name',
         'last_name',
-        'role_id',
         'is_active',
         'last_login',
         'created_at',
@@ -131,7 +127,6 @@ export class UsersService {
         'email',
         'first_name',
         'last_name',
-        'role_id',
         'is_active',
         'last_login',
         'created_at',
@@ -173,7 +168,6 @@ export class UsersService {
         'email',
         'first_name',
         'last_name',
-        'role_id',
         'is_active',
         'last_login',
         'created_at',

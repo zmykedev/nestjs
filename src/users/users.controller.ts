@@ -29,7 +29,7 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @ApiOperation({
-    summary: 'Create a new user with customer role',
+    summary: 'Create a new user',
     description:
       'Register a new user with standard customer permissions. This endpoint is public and does not require authentication.',
   })
