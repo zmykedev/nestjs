@@ -1,9 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 import { AuthModule } from './auth/auth.module';
 import config from './config';
 import { UsersModule } from './users/users.module';
+import { NanoModule } from './nano/nano.module';
 import { getEnvFilePath } from './utils/config/envFile';
 
 @Module({
@@ -13,6 +16,10 @@ import { getEnvFilePath } from './utils/config/envFile';
       isGlobal: true,
       envFilePath: getEnvFilePath(),
       validationOptions: { abortEarly: true },
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '/public',
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
@@ -34,6 +41,7 @@ import { getEnvFilePath } from './utils/config/envFile';
     }),
     UsersModule,
     AuthModule,
+    NanoModule,
   ],
   controllers: [],
   providers: [],
