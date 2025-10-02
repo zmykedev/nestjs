@@ -4,28 +4,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
   name = 'CreateInitialTables1700000000000';
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    // Crear tabla de roles
-    await queryRunner.query(`
-      CREATE TABLE "roles" (
-        "id" SERIAL NOT NULL,
-        "name" character varying(50) NOT NULL,
-        "description" character varying(255),
-        "is_active" boolean NOT NULL DEFAULT true,
-        "created_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "updated_at" TIMESTAMP NOT NULL DEFAULT now(),
-        "deleted_at" TIMESTAMP,
-        CONSTRAINT "UQ_roles_name" UNIQUE ("name"),
-        CONSTRAINT "PK_roles" PRIMARY KEY ("id")
-      )
-    `);
-
-    // Insertar roles por defecto
-    await queryRunner.query(`
-      INSERT INTO "roles" ("name", "description") VALUES 
-      ('admin', 'Administrador del sistema'),
-      ('user', 'Usuario estándar')
-    `);
-
     // Crear tabla de usuarios
     await queryRunner.query(`
       CREATE TABLE "users" (
@@ -34,7 +12,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
         "password" character varying(255) NOT NULL,
         "first_name" character varying(100) NOT NULL,
         "last_name" character varying(100) NOT NULL,
-        "role_id" integer NOT NULL,
         "is_active" boolean NOT NULL DEFAULT true,
         "last_login" TIMESTAMP,
         "refresh_token" character varying(500),
@@ -87,9 +64,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
       'CREATE INDEX "IDX_users_email" ON "users" ("email")',
     );
     await queryRunner.query(
-      'CREATE INDEX "IDX_users_role_id" ON "users" ("role_id")',
-    );
-    await queryRunner.query(
       'CREATE INDEX "IDX_users_is_active" ON "users" ("is_active")',
     );
     await queryRunner.query(
@@ -132,12 +106,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
     );
 
     // Crear foreign keys
-    await queryRunner.query(`
-      ALTER TABLE "users" 
-      ADD CONSTRAINT "FK_users_role_id" 
-      FOREIGN KEY ("role_id") REFERENCES "roles"("id") 
-      ON DELETE RESTRICT ON UPDATE CASCADE
-    `);
 
     await queryRunner.query(`
       ALTER TABLE "auth_sessions" 
@@ -162,9 +130,6 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
     await queryRunner.query(
       'ALTER TABLE "auth_sessions" DROP CONSTRAINT "FK_auth_sessions_user_id"',
     );
-    await queryRunner.query(
-      'ALTER TABLE "users" DROP CONSTRAINT "FK_users_role_id"',
-    );
 
     // Eliminar índices
     await queryRunner.query('DROP INDEX "IDX_audit_logs_created_at"');
@@ -182,13 +147,11 @@ export class CreateInitialTables1700000000000 implements MigrationInterface {
 
     await queryRunner.query('DROP INDEX "IDX_users_deleted_at"');
     await queryRunner.query('DROP INDEX "IDX_users_is_active"');
-    await queryRunner.query('DROP INDEX "IDX_users_role_id"');
     await queryRunner.query('DROP INDEX "IDX_users_email"');
 
     // Eliminar tablas
     await queryRunner.query('DROP TABLE "audit_logs"');
     await queryRunner.query('DROP TABLE "auth_sessions"');
     await queryRunner.query('DROP TABLE "users"');
-    await queryRunner.query('DROP TABLE "roles"');
   }
 }

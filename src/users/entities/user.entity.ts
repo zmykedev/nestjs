@@ -5,11 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
-  ManyToOne,
-  JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { Role } from './role.entity';
 import { AuthSession } from '../../auth/entities/auth-session.entity';
 import { AuditLog } from '../../common/entities/audit-log.entity';
 
@@ -30,9 +27,6 @@ export class User {
   @Column({ type: 'varchar', length: 100 })
   last_name: string;
 
-  @Column({ type: 'int' })
-  role_id: number;
-
   @Column({ type: 'boolean', default: true })
   is_active: boolean;
 
@@ -50,10 +44,6 @@ export class User {
 
   @DeleteDateColumn()
   deleted_at: Date;
-
-  @ManyToOne(() => Role, (role) => role.users)
-  @JoinColumn({ name: 'role_id' })
-  role: Role;
 
   @OneToMany(() => AuthSession, (session) => session.user)
   sessions: AuthSession[];
