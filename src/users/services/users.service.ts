@@ -35,6 +35,7 @@ export class UsersService {
       last_name: createUserDto.lastName,
       email: createUserDto.email,
       password: await bcrypt.hash(decryptedPassword, 10),
+      role_id: 2,
     });
 
     const savedUser = await this.userRepository.save(user);
