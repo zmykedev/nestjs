@@ -39,7 +39,6 @@ import { getEnvFilePath } from './utils/config/envFile';
             }
           : false,
     }),
-    UsersModule,
     AuthModule,
     NanoModule,
   ],
