@@ -128,24 +128,24 @@ export class AuthController {
   //   await this.authService.logout(req.user);
   // }
   //
-  // @ApiOperation({
-  //   summary: 'Refresh access token',
-  //   description:
-  //     'Generate a new access token using a valid refresh token. Useful for maintaining user sessions.',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   type: GetRefreshResponse,
-  //   description: 'New access token generated successfully',
-  // })
-  // @ApiResponse({
-  //   status: 401,
-  //   description: 'Unauthorized - Invalid or expired refresh token',
-  // })
-  // @ApiBearerAuth('refresh-token')
-  // @UseGuards(JwtRefreshGuard)
-  // @Get('refresh')
-  // refresh(@Req() req: AuthorizedRequest) {
-  //   return this.authService.createAccessTokenFromRefreshToken(req.user);
-  // }
+  @ApiOperation({
+    summary: 'Refresh access token',
+    description:
+      'Generate a new access token using a valid refresh token. Useful for maintaining user sessions.',
+  })
+  @ApiResponse({
+    status: 200,
+    type: GetRefreshResponse,
+    description: 'New access token generated successfully',
+  })
+  @ApiResponse({
+    status: 401,
+    description: 'Unauthorized - Invalid or expired refresh token',
+  })
+  @ApiBearerAuth('refresh-token')
+  @UseGuards(JwtRefreshGuard)
+  @Get('refresh')
+  refresh(@Req() req: AuthorizedRequest) {
+    return this.authService.createAccessTokenFromRefreshToken(req.user);
+  }
 }

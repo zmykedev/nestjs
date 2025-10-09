@@ -6,26 +6,20 @@ import config from '../../config';
 import { UsersService } from '../../users/services/users.service';
 import { PayloadToken } from '../models/token.model';
 import { buildSession } from '../helpers/auth.helper';
-import { User } from '../../users/entities/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { RegisterDto } from '../dto/register.dto';
 import { createHash } from 'crypto';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
     private jwtService: JwtService,
+    private readonly usersService: UsersService,
 
     @Inject(config.KEY) private configService: ConfigType<typeof config>,
-    @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
 
   async register(req: RegisterDto) {
-    const existingUser = await this.userRepository.findOne({
-      where: { email: req.email },
-    });
+    const existingUser = await this.usersService.findByEmail(req.email);
 
     if (existingUser) {
       throw new BadRequestException('User already exists');
@@ -33,27 +27,24 @@ export class AuthService {
 
     const decryptedPassword = this.decryptPassword(req.password);
 
-    const user = this.userRepository.create({
+    const user = await this.usersService.create({
       email: req.email,
       first_name: req.firstName,
       last_name: req.lastName,
       password: await bcrypt.hash(decryptedPassword, 10),
-    });
-
-    const savedUser = await this.userRepository.save(user);
+    })
 
     return this.login({
-      id: savedUser.id,
+      id: user.id,
     });
   }
 
   async validateUser(email: string, password: string) {
-    const user: {
-      password: string;
-      id: number;
-    } = await this.usersService.findByEmailAndGetPassword(email);
+    const user = await this.usersService.findByEmail(email);
 
-    if (!user) return null;
+    if (!user) {
+      return null;
+    }
 
     const decryptedPassword = this.decryptPassword(password);
     const passwordDoesMatch = await bcrypt.compare(decryptedPassword, user.password);
@@ -94,28 +85,11 @@ export class AuthService {
     const hash = createHash('sha256').update(refreshToken).digest('hex');
     const currentHashedRefreshToken = await bcrypt.hash(hash, 10);
 
-    const result = await this.userRepository.update(numericUserId, {
+    await this.usersService.update(numericUserId, {
       refresh_token: currentHashedRefreshToken,
     });
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`User with id ${numericUserId} not found`);
-    }
-
-    const userInfo = await this.userRepository.findOne({
-      select: [
-        'id',
-        'email',
-        'first_name',
-        'last_name',
-        'is_active',
-        'last_login',
-        'created_at',
-        'updated_at',
-        'deleted_at',
-      ],
-      where: { id: user.id },
-    });
+    const userInfo = await this.usersService.getInfoById(numericUserId);
 
     return {
       session: buildSession(userInfo, jwtToken, refreshToken),
@@ -131,17 +105,23 @@ export class AuthService {
   jwtRefreshToken(user: PayloadToken) {
     const payload = { id: user.id };
 
-    const refreshToken = this.jwtService.sign(payload, {
+    return this.jwtService.sign(payload, {
       secret: this.configService.jwt.jwtRefreshSecret,
       expiresIn: this.configService.jwt.refreshTokenExpiration,
     });
-
-    return refreshToken;
   }
 
-  async logout(user: PayloadToken) {
-    return await this.usersService.removeRefreshToken(user.id);
-  }
+  // async logout(user: PayloadToken) {
+  //   const numericUserId = Number(userId);
+  //   //   if (!numericUserId || isNaN(numericUserId)) {
+  //   //     throw new NotFoundException(`Invalid user ID: ${userId}`);
+  //   //   }
+  //   //
+  //   //   await this.findById(numericUserId);
+  //   //
+  //   //   await this.userRepository.update(numericUserId, { refresh_token: null });
+  //   return await this.usersService.removeRefreshToken(user.id);
+  // }
 
   createAccessTokenFromRefreshToken(user: PayloadToken) {
     return this.jwtToken(user);
